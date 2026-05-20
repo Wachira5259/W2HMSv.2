@@ -648,7 +648,7 @@ var PW = 'W2ICT.2026';
 // ── กำหนด URL ของ Apps Script Web App ──────────────
 // ใส่ URL ที่ได้จากการ Deploy ตรงนี้ (ใช้เมื่อรันบน GitHub Pages)
 // ตัวอย่าง: 'https://script.google.com/macros/s/AKfycb.../exec'
-var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx4AsH2ZxuHy5-45IQ-0YGXoTfiupXobiw94FKKDmb0PrPpGywph9eLHmmRhgDLNqCU/exec';
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwi8vqeCUg0PvPGGy9HDBtpwkGQmUiA4WIxwHexWMggNws2K89w4oSvNUdrU1qzd5ju/exec';
 
 var DCOLS = [
   {i:11,n:'ความดันโลหิตสูง'},{i:12,n:'เบาหวาน'},{i:13,n:'ไขมันในเลือดสูง'},
