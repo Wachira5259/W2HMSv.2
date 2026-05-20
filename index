@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>ระบบฐานข้อมูลข้าราชการ บน.2</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ─── RESET ─────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+/* ─── DESIGN TOKENS (Minimal theme) ─────────────── */
+:root{
+  --bg:       #f1f5f9;
+  --surface:  #ffffff;
+  --surface2: #f8fafc;
+  --border:   #e2e8f0;
+  --border2:  #f1f5f9;
+
+  --txt:      #0f172a;
+  --txt2:     #475569;
+  --txt3:     #94a3b8;
+
+  --primary:  #3b82f6;
+  --primary2: #2563eb;
+  --primary-bg:#eff6ff;
+
+  --green:    #16a34a; --green-bg: #dcfce7;
+  --red:      #dc2626; --red-bg:   #fee2e2;
+  --orange:   #ea580c; --orange-bg:#fff7ed;
+  --purple:   #7c3aed; --purple-bg:#f5f3ff;
+  --teal:     #0d9488; --teal-bg:  #f0fdfa;
+  --gold:     #b45309; --gold-bg:  #fef3c7;
+
+  --sb-bg:    #1e293b;
+  --sb-active:#3b82f6;
+  --sb-txt:   rgba(255,255,255,.65);
+  --sb-txt-hi:#ffffff;
+  --sb-w:     252px;
+  --sb-wc:    60px;
+
+  --sh: 0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --sh2:0 4px 12px rgba(0,0,0,.08);
+  --r:  8px;
+  --r2: 12px;
+  --tr: .2s ease;
+}
+
+/* ─── BASE ───────────────────────────────────────── */
+html,body{height:100%;font-family:'Sarabun','Segoe UI',sans-serif;
+  background:var(--bg);color:var(--txt);font-size:14px;line-height:1.5}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--txt3)}
+
+/* ─── LOADER ─────────────────────────────────────── */
+#gL{position:fixed;inset:0;background:var(--sb-bg);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;z-index:9999;transition:opacity .4s}
+#gL p{color:rgba(255,255,255,.7);font-size:.95rem;margin:.75rem 0 1.5rem}
+.spin{width:36px;height:36px;border:3px solid rgba(255,255,255,.15);
+  border-top-color:var(--primary);border-radius:50%;animation:sp .75s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ─── LOGIN ──────────────────────────────────────── */
+#loginSc{display:none;position:fixed;inset:0;
+  background:linear-gradient(160deg,#0f172a 0%,#1e3a5f 60%,#1e40af 100%);
+  align-items:center;justify-content:center;z-index:8000}
+#loginSc.on{display:flex}
+.lcard{background:rgba(255,255,255,.06);backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,.12);border-radius:20px;
+  padding:2.5rem 2rem;width:360px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.lcard .ico{font-size:2.6rem;margin-bottom:.5rem}
+.lcard h2{color:#fff;font-size:1.2rem;font-weight:700;margin-bottom:.25rem}
+.lcard .sub{color:rgba(255,255,255,.45);font-size:.8rem;margin-bottom:2rem}
+.lcard label{display:block;color:rgba(255,255,255,.6);font-size:.78rem;
+  text-align:left;margin-bottom:.35rem}
+.lcard input{width:100%;padding:.72rem 1rem;background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.18);border-radius:var(--r);color:#fff;
+  font-size:.95rem;outline:none;transition:border-color var(--tr)}
+.lcard input:focus{border-color:var(--primary)}
+.lcard input::placeholder{color:rgba(255,255,255,.3)}
+.btn-login{margin-top:1rem;width:100%;padding:.8rem;
+  background:var(--primary);border:none;border-radius:var(--r);
+  color:#fff;font-size:.95rem;font-weight:600;cursor:pointer;
+  box-shadow:0 4px 14px rgba(59,130,246,.45);transition:background var(--tr)}
+.btn-login:hover{background:var(--primary2)}
+.lerr{color:#fca5a5;font-size:.8rem;margin-top:.75rem;min-height:1.1em}
+.lver{color:rgba(255,255,255,.22);font-size:.7rem;margin-top:1.5rem}
+
+/* ─── APP SHELL ──────────────────────────────────── */
+#app{display:none;height:100dvh;overflow:hidden}
+#app.on{display:flex}
+
+/* ─── SIDEBAR ────────────────────────────────────── */
+.sb{width:var(--sb-w);background:var(--sb-bg);display:flex;flex-direction:column;
+  height:100vh;flex-shrink:0;transition:width var(--tr);overflow:hidden;
+  position:relative;z-index:100}
+.sb.col{width:var(--sb-wc)}
+
+/* Header */
+.sb-hd{padding:.9rem .85rem .7rem;border-bottom:1px solid rgba(255,255,255,.06);
+  display:flex;align-items:center;gap:.55rem;overflow:hidden;flex-shrink:0}
+.sb-logo{font-size:1.6rem;flex-shrink:0;line-height:1}
+.sb-info{overflow:hidden;flex:1;white-space:nowrap}
+.sb-info .t1{color:#fff;font-size:.8rem;font-weight:700}
+.sb-info .t2{color:var(--gold);font-size:.65rem;margin-top:.05rem}
+.sb.col .sb-info{display:none}
+
+/* Collapse toggle — floating tab on right edge */
+.sb-tog{position:absolute;right:-14px;top:50%;transform:translateY(-50%);
+  width:28px;height:28px;background:var(--surface);border:1px solid var(--border);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;box-shadow:var(--sh2);z-index:200;transition:background var(--tr),box-shadow var(--tr);
+  font-size:.75rem;color:var(--txt2);flex-shrink:0}
+.sb-tog:hover{background:var(--primary-bg);border-color:var(--primary);color:var(--primary);box-shadow:0 4px 12px rgba(59,130,246,.2)}
+
+/* Nav labels */
+.nav-sep{padding:.65rem .75rem .2rem;color:rgba(255,255,255,.22);
+  font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;
+  white-space:nowrap;overflow:hidden;flex-shrink:0}
+.sb.col .nav-sep{opacity:0;height:0;padding:0;margin:0}
+
+/* Nav items */
+.ni{display:flex;align-items:center;gap:.55rem;padding:.62rem .75rem;
+  margin:.1rem .45rem;border-radius:var(--r);color:var(--sb-txt);
+  cursor:pointer;transition:all var(--tr);white-space:nowrap;overflow:hidden;flex-shrink:0;
+  position:relative}
+.ni:hover{background:rgba(255,255,255,.06);color:var(--sb-txt-hi)}
+.ni.on{background:var(--primary);color:#fff;font-weight:600;
+  box-shadow:0 3px 10px rgba(59,130,246,.35)}
+.ni .ic{font-size:1rem;width:1.25rem;text-align:center;flex-shrink:0}
+.ni .lbl{flex:1;font-size:.83rem}
+.ni .bdg{margin-left:auto;background:rgba(255,255,255,.15);color:#fff;
+  font-size:.6rem;font-weight:700;padding:.1rem .4rem;border-radius:99px;flex-shrink:0}
+.ni.on .bdg{background:rgba(255,255,255,.25)}
+.sb.col .ni .lbl,.sb.col .ni .bdg{display:none}
+.sb.col .ni{justify-content:center;padding:.62rem 0}
+
+/* Tooltip on collapsed */
+.sb.col .ni::after{content:attr(data-tip);position:absolute;left:calc(var(--sb-wc) + 8px);
+  background:#1e293b;color:#fff;font-size:.75rem;padding:.25rem .65rem;
+  border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;
+  transition:opacity .15s;z-index:300;border:1px solid rgba(255,255,255,.1)}
+.sb.col .ni:hover::after{opacity:1}
+
+/* Footer */
+.sb-ft{margin-top:auto;padding:.75rem;border-top:1px solid rgba(255,255,255,.06);flex-shrink:0}
+.btn-out{width:100%;padding:.5rem;background:transparent;
+  border:1px solid rgba(239,68,68,.3);border-radius:var(--r);
+  color:#fca5a5;font-size:.8rem;cursor:pointer;transition:all var(--tr);
+  white-space:nowrap;overflow:hidden}
+.btn-out:hover{background:rgba(239,68,68,.15)}
+.sb.col .btn-out .btxt{display:none}
+.sb.col .btn-out{padding:.5rem 0;text-align:center}
+.upd{color:rgba(255,255,255,.22);font-size:.6rem;text-align:center;
+  margin-top:.5rem;line-height:1.5;overflow:hidden}
+.sb.col .upd{display:none}
+
+/* Mobile overlay */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:90}
+.ov.on{display:block}
+
+/* ─── CONTENT ────────────────────────────────────── */
+.ca{flex:1;overflow-y:auto;display:flex;flex-direction:column;min-width:0}
+
+/* Topbar */
+.tb{height:54px;background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 1.2rem;gap:.8rem;
+  position:sticky;top:0;z-index:50;flex-shrink:0}
+.tb-ham{display:none;background:none;border:none;font-size:1.3rem;
+  cursor:pointer;color:var(--txt2);padding:.2rem;line-height:1}
+.tb-title{font-size:.95rem;font-weight:700;color:var(--txt);flex:1}
+.tb-sch{display:flex;align-items:center;background:var(--bg);
+  border:1px solid var(--border);border-radius:99px;
+  padding:.3rem .9rem;gap:.4rem}
+.tb-sch input{border:none;background:none;outline:none;font-size:.83rem;
+  color:var(--txt);width:150px}
+.tb-sch input::placeholder{color:var(--txt3)}
+.tb-av{width:32px;height:32px;border-radius:50%;background:var(--primary);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-weight:700;font-size:.85rem;flex-shrink:0}
+
+/* Page container */
+.mc{padding:1.25rem;flex:1}
+.page{display:none}
+.page.on{display:block}
+.divider{height:1px;background:var(--border2);margin:1.25rem 0}
+
+/* ─── FILTER BAR ─────────────────────────────────── */
+.fbar{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.1rem;align-items:center}
+.fsel{padding:.38rem .7rem;border:1px solid var(--border);border-radius:var(--r);
+  background:var(--surface);color:var(--txt);font-size:.8rem;cursor:pointer;
+  box-shadow:var(--sh);outline:none;transition:border-color var(--tr)}
+.fsel:focus{border-color:var(--primary)}
+.btn-rst{padding:.38rem .85rem;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);color:var(--txt2);font-size:.8rem;cursor:pointer;
+  box-shadow:var(--sh);transition:all var(--tr)}
+.btn-rst:hover{border-color:var(--primary);color:var(--primary)}
+
+/* ─── STAT CARDS ─────────────────────────────────── */
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:.75rem;margin-bottom:1.1rem}
+.sc{background:var(--surface);border-radius:var(--r2);padding:.9rem 1.1rem;
+  box-shadow:var(--sh);border:1px solid var(--border2);
+  display:flex;align-items:center;gap:.75rem;
+  transition:box-shadow var(--tr),transform var(--tr)}
+.sc:hover{box-shadow:var(--sh2);transform:translateY(-1px)}
+.sc-ico{width:40px;height:40px;border-radius:10px;display:flex;
+  align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;
+  background:var(--primary-bg)}
+.sc.g .sc-ico{background:var(--green-bg)}
+.sc.o .sc-ico{background:var(--orange-bg)}
+.sc.p .sc-ico{background:var(--purple-bg)}
+.sc.t .sc-ico{background:var(--teal-bg)}
+.sc.r .sc-ico{background:var(--red-bg)}
+.sc-v{font-size:1.55rem;font-weight:800;color:var(--txt);line-height:1}
+.sc-l{font-size:.72rem;color:var(--txt2);margin-top:.15rem}
+
+/* ─── PANEL (chart/label container) ─────────────── */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:.75rem;margin-bottom:1.1rem}
+.pgrid.cols-3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.panel{background:var(--surface);border-radius:var(--r2);padding:1rem 1.1rem;
+  box-shadow:var(--sh);border:1px solid var(--border2)}
+.panel-t{font-size:.75rem;font-weight:700;color:var(--txt2);
+  margin-bottom:.8rem;display:flex;align-items:center;gap:.35rem;
+  text-transform:uppercase;letter-spacing:.04em}
+.ch-wrap{position:relative;height:190px;display:flex;align-items:center;justify-content:center}
+.ch-wrap.tall{height:340px}
+.ch-wrap.xtall{height:580px}
+
+/* ─── LABEL LIST ─────────────────────────────────── */
+/* Used for rank counts, unit counts, province counts */
+.ll{display:flex;flex-direction:column;gap:0;overflow-y:auto;max-height:280px}
+.ll-item{display:flex;align-items:center;gap:.6rem;
+  padding:.38rem 0;border-bottom:1px solid var(--border2)}
+.ll-item:last-child{border-bottom:none}
+.ll-name{font-size:.78rem;color:var(--txt);min-width:110px;max-width:140px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0}
+.ll-bar-w{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;min-width:30px}
+.ll-bar-f{height:100%;border-radius:3px;background:var(--primary);transition:width .5s ease}
+.ll-cnt{font-size:.78rem;font-weight:700;color:var(--primary);
+  min-width:28px;text-align:right;flex-shrink:0}
+
+/* Compact 2-col label grid */
+.ll-2col{display:grid;grid-template-columns:1fr 1fr;gap:0 1rem;overflow-y:auto;max-height:280px}
+
+/* ─── SECTION HEADER ─────────────────────────────── */
+.sec-hd{display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:.8rem;flex-wrap:wrap;gap:.5rem}
+.sec-t{font-size:.95rem;font-weight:800;color:var(--txt);display:flex;align-items:center;gap:.4rem}
+.sec-acts{display:flex;gap:.4rem;align-items:center;flex-wrap:wrap}
+.sbox{display:flex;align-items:center;background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--r);
+  padding:.35rem .7rem;gap:.35rem;box-shadow:var(--sh)}
+.sbox input{border:none;background:none;outline:none;
+  font-size:.8rem;color:var(--txt);width:150px}
+.sbox input::placeholder{color:var(--txt3)}
+.cnt-badge{background:var(--primary);color:#fff;font-size:.68rem;
+  font-weight:700;padding:.2rem .65rem;border-radius:99px}
+
+/* ─── TABLE ──────────────────────────────────────── */
+.tw{background:var(--surface);border-radius:var(--r2);
+  box-shadow:var(--sh);border:1px solid var(--border2);overflow:hidden}
+.ts{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+thead th{background:var(--sb-bg);color:rgba(255,255,255,.85);
+  padding:.6rem .8rem;text-align:left;font-size:.72rem;font-weight:600;
+  white-space:nowrap;cursor:pointer;user-select:none;
+  transition:background var(--tr)}
+thead th:hover{background:#162032}
+thead th .si{margin-left:.2rem;opacity:.35;font-size:.6rem}
+thead th.sa .si,thead th.sd .si{opacity:.9}
+tbody tr{border-bottom:1px solid var(--border2);transition:background var(--tr)}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--bg)}
+tbody td{padding:.58rem .8rem;white-space:nowrap;color:var(--txt)}
+tbody td.wrap{white-space:normal;max-width:180px}
+
+/* Badges */
+.bdg{display:inline-flex;align-items:center;padding:.15rem .5rem;
+  border-radius:99px;font-size:.67rem;font-weight:700}
+.b-blue  {background:var(--primary-bg);color:var(--primary2)}
+.b-green {background:var(--green-bg);  color:var(--green)}
+.b-orange{background:var(--orange-bg); color:var(--orange)}
+.b-red   {background:var(--red-bg);    color:var(--red)}
+.b-purple{background:var(--purple-bg); color:var(--purple)}
+.b-teal  {background:var(--teal-bg);   color:var(--teal)}
+.b-gray  {background:var(--bg);        color:var(--txt2);border:1px solid var(--border)}
+
+.chky{color:var(--green);font-size:.88rem}
+.chkn{color:var(--txt3);font-size:.72rem}
+.mu{color:var(--txt3)}
+.fw7{font-weight:700}
+.mono{font-family:monospace;letter-spacing:.04em}
+
+/* ─── PAGINATION ─────────────────────────────────── */
+.pg{display:flex;align-items:center;justify-content:space-between;
+  padding:.6rem .85rem;border-top:1px solid var(--border2);flex-wrap:wrap;gap:.4rem}
+.pg-info{color:var(--txt2);font-size:.75rem}
+.pg-ctrl{display:flex;gap:.2rem;align-items:center}
+.pb{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);
+  background:var(--surface);color:var(--txt2);cursor:pointer;font-size:.75rem;
+  display:flex;align-items:center;justify-content:center;transition:all var(--tr)}
+.pb:hover{border-color:var(--primary);color:var(--primary)}
+.pb.on{background:var(--primary);color:#fff;border-color:var(--primary);font-weight:700}
+.pb:disabled{opacity:.28;cursor:default}
+.ppsel{padding:.2rem .35rem;border:1px solid var(--border);border-radius:6px;
+  background:var(--surface);color:var(--txt2);font-size:.75rem;cursor:pointer}
+
+/* Empty */
+.empty{text-align:center;padding:2.5rem 1rem;color:var(--txt3);font-size:.85rem}
+.empty .ei{display:block;font-size:2rem;margin-bottom:.6rem}
+
+/* Disease tags in table */
+.dis-tag{display:inline-block;background:var(--red-bg);color:var(--red);
+  border-radius:4px;font-size:.67rem;font-weight:600;
+  padding:.12rem .45rem;margin:.1rem .15rem .1rem 0;white-space:nowrap}
+
+/* ─── RESPONSIVE ─────────────────────────────────── */
+@media(max-width:900px){
+  .sb{position:fixed;left:0;top:0;height:100%;z-index:100;
+    transform:translateX(calc(-1 * var(--sb-w)));transition:transform var(--tr),width var(--tr)}
+  .sb.open{transform:translateX(0);box-shadow:var(--sh2)}
+  .sb.col{width:var(--sb-w);transform:translateX(calc(-1 * var(--sb-w)))}
+  .sb.col.open{transform:translateX(0)}
+  .sb-tog{display:none}
+  .tb-ham{display:block}
+  .tb-sch{display:none}
+}
+@media(max-width:600px){
+  .sgrid{grid-template-columns:1fr 1fr}
+  .pgrid{grid-template-columns:1fr}
+  .mc{padding:.9rem}
+  .sbox input{width:120px}
+}
+@media(max-width:380px){
+  .sgrid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="gL">
+  <div style="font-size:2.5rem">🪖</div>
+  <p>กำลังโหลดระบบ...</p>
+  <div class="spin"></div>
+</div>
+
+<!-- LOGIN -->
+<div id="loginSc">
+  <div class="lcard">
+    <div class="ico">🏛️</div>
+    <h2>ระบบฐานข้อมูลข้าราชการ</h2>
+    <div class="sub">กองบิน 2 · กองทัพอากาศ</div>
+    <label>รหัสผ่าน</label>
+    <input type="password" id="pwIn" placeholder="กรอกรหัสผ่านเพื่อเข้าสู่ระบบ" autocomplete="current-password">
+    <button class="btn-login" onclick="doLogin()">เข้าสู่ระบบ</button>
+    <div class="lerr" id="lerr"></div>
+    <div class="lver">ฐานข้อมูลบ้านพัก Rev 2.0 · พ.ศ. 2569</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="ov" id="sbOv" onclick="closeSB()"></div>
+
+  <!-- SIDEBAR -->
+  <nav class="sb" id="sb">
+    <div class="sb-hd">
+      <div class="sb-logo">🪖</div>
+      <div class="sb-info">
+        <div class="t1">ฐานข้อมูลข้าราชการ</div>
+        <div class="t2">กองบิน 2 · ทอ.</div>
+      </div>
+    </div>
+    <!-- Collapse tab -->
+    <button class="sb-tog" id="sbTog" onclick="toggleCol()" title="ย่อ / ขยายเมนู">
+      <span id="togIco">◀</span>
+    </button>
+
+    <div class="nav-sep">ภาพรวม</div>
+    <div class="ni on" id="n-dash" data-tip="Dashboard" onclick="goPage('dash')">
+      <span class="ic">📊</span><span class="lbl">Dashboard</span>
+    </div>
+
+    <div class="nav-sep">ข้อมูล</div>
+    <div class="ni" id="n-off" data-tip="ข้าราชการ" onclick="goPage('off')">
+      <span class="ic">👨‍✈️</span><span class="lbl">ข้อมูลข้าราชการ</span><span class="bdg" id="bdgOff">—</span>
+    </div>
+    <div class="ni" id="n-veh" data-tip="ยานพาหนะ" onclick="goPage('veh')">
+      <span class="ic">🚗</span><span class="lbl">ข้อมูลยานพาหนะ</span><span class="bdg" id="bdgVeh">—</span>
+    </div>
+    <div class="ni" id="n-dis" data-tip="โรคประจำตัว" onclick="goPage('dis')">
+      <span class="ic">🏥</span><span class="lbl">ข้อมูลโรคประจำตัว</span><span class="bdg" id="bdgDis">—</span>
+    </div>
+
+    <div class="sb-ft">
+      <button class="btn-out" onclick="doLogout()"><span class="btxt">🚪 ออกจากระบบ</span><span class="bico" style="display:none">🚪</span></button>
+      <div class="upd" id="updTxt"></div>
+    </div>
+  </nav>
+
+  <!-- CONTENT -->
+  <div class="ca">
+    <header class="tb">
+      <button class="tb-ham" onclick="toggleSB()">☰</button>
+      <div class="tb-title" id="tbT">Dashboard</div>
+      <div class="tb-sch"><span style="color:var(--txt3)">⌕</span><input type="text" id="gSch" placeholder="ค้นหา..." oninput="onGS(this.value)"></div>
+      <div class="tb-av">W</div>
+    </header>
+
+    <div class="mc">
+
+      <!-- ═══════════════════════════════════════════
+           DASHBOARD (OVERVIEW)
+      ════════════════════════════════════════════ -->
+      <div class="page on" id="page-dash">
+        <div class="sgrid">
+          <div class="sc">   <div class="sc-ico">👨‍✈️</div><div><div class="sc-v" id="dOff">—</div><div class="sc-l">ข้าราชการทั้งหมด</div></div></div>
+          <div class="sc g"> <div class="sc-ico">🚗</div><div><div class="sc-v" id="dVeh">—</div><div class="sc-l">ยานพาหนะทั้งหมด</div></div></div>
+          <div class="sc o"> <div class="sc-ico">🏥</div><div><div class="sc-v" id="dDis">—</div><div class="sc-l">ผู้มีโรคประจำตัว</div></div></div>
+          <div class="sc p"> <div class="sc-ico">🏘️</div><div><div class="sc-v" id="dHou">—</div><div class="sc-l">ผู้อยู่บ้านพัก</div></div></div>
+        </div>
+        <div class="pgrid">
+          <div class="panel"><div class="panel-t">⭐ สัดส่วนชั้นยศ</div><div class="ch-wrap"><canvas id="cDRank"></canvas></div></div>
+          <div class="panel"><div class="panel-t">🚗 ประเภทยานพาหนะ</div><div class="ch-wrap"><canvas id="cDVeh"></canvas></div></div>
+          <div class="panel"><div class="panel-t">🏥 Top 10 โรคประจำตัว</div><div class="ch-wrap"><canvas id="cDDis"></canvas></div></div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           OFFICIALS
+      ════════════════════════════════════════════ -->
+      <div class="page" id="page-off">
+        <!-- Filter -->
+        <div class="fbar">
+          <select class="fsel" id="fOU" onchange="applyOF()"><option value="">📂 ทุกหน่วย</option></select>
+          <select class="fsel" id="fOR" onchange="applyOF()"><option value="">⭐ ทุกยศ</option></select>
+          <select class="fsel" id="fOO" onchange="applyOF()">
+            <option value="">🏛️ ทุกสังกัด</option>
+            <option value="บน.2">บน.2</option>
+            <option value="กซอ.2">กซอ.2</option>
+            <option value="กรว.4">กรว.4</option>
+          </select>
+          <button class="btn-rst" onclick="resetOF()">↺ รีเซ็ต</button>
+        </div>
+
+        <!-- Stat cards -->
+        <div class="sgrid">
+          <div class="sc">  <div class="sc-ico">👨‍✈️</div><div><div class="sc-v" id="oTot">—</div><div class="sc-l">รวมทั้งหมด</div></div></div>
+          <div class="sc">  <div class="sc-ico">🏛️</div><div><div class="sc-v" id="oBn2">—</div><div class="sc-l">สังกัด บน.2</div></div></div>
+          <div class="sc g"><div class="sc-ico">🏛️</div><div><div class="sc-v" id="oGso">—</div><div class="sc-l">สังกัด กซอ.2</div></div></div>
+          <div class="sc t"><div class="sc-ico">🏛️</div><div><div class="sc-v" id="oGrw">—</div><div class="sc-l">สังกัด กรว.4</div></div></div>
+          <div class="sc p"><div class="sc-ico">👨</div><div><div class="sc-v" id="oMale">—</div><div class="sc-l">เพศชาย</div></div></div>
+          <div class="sc o"><div class="sc-ico">👩</div><div><div class="sc-v" id="oFem">—</div><div class="sc-l">เพศหญิง</div></div></div>
+        </div>
+
+        <!-- Charts/Labels row -->
+        <div class="pgrid cols-3">
+          <!-- Rank label list -->
+          <div class="panel">
+            <div class="panel-t">⭐ จำนวนคนแต่ละชั้นยศ</div>
+            <div class="ll" id="llRank"></div>
+          </div>
+          <!-- Unit label list -->
+          <div class="panel">
+            <div class="panel-t">🏢 จำนวนคนแต่ละหน่วย</div>
+            <div class="ll" id="llUnit"></div>
+          </div>
+          <!-- Org + gender bar -->
+          <div class="panel">
+            <div class="panel-t">👥 เพศแยกตามสังกัดหลัก</div>
+            <div class="ch-wrap"><canvas id="cOOrg"></canvas></div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="sec-hd">
+          <div class="sec-t">👨‍✈️ รายชื่อข้าราชการ</div>
+          <div class="sec-acts">
+            <div class="sbox"><span style="color:var(--txt3)">⌕</span><input type="text" id="srchOff" placeholder="ค้นหา..." oninput="filterOff()"></div>
+            <span class="cnt-badge" id="cntOff">0 คน</span>
+          </div>
+        </div>
+        <div class="tw">
+          <div class="ts">
+            <table>
+              <thead><tr>
+                <th onclick="sT('off',0)"># <span class="si">↕</span></th>
+                <th onclick="sT('off',1)">ยศ <span class="si">↕</span></th>
+                <th onclick="sT('off',2)">ชื่อ <span class="si">↕</span></th>
+                <th onclick="sT('off',3)">นามสกุล <span class="si">↕</span></th>
+                <th onclick="sT('off',5)">หน่วยหลัก <span class="si">↕</span></th>
+                <th onclick="sT('off',11)">ตำแหน่ง <span class="si">↕</span></th>
+                <th onclick="sT('off',15)">สถานภาพ <span class="si">↕</span></th>
+                <th onclick="sT('off',17)">เขต <span class="si">↕</span></th>
+                <th onclick="sT('off',18)">อาคาร <span class="si">↕</span></th>
+                <th onclick="sT('off',19)">ห้อง <span class="si">↕</span></th>
+                <th>อีเมล</th>
+              </tr></thead>
+              <tbody id="tbOff"><tr><td colspan="11" class="empty"><span class="ei">⏳</span>กำลังโหลด...</td></tr></tbody>
+            </table>
+          </div>
+          <div class="pg" id="pgOff"></div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           VEHICLES
+      ════════════════════════════════════════════ -->
+      <div class="page" id="page-veh">
+        <div class="fbar">
+          <select class="fsel" id="fVU" onchange="applyVF()"><option value="">📂 ทุกสังกัด</option></select>
+          <select class="fsel" id="fVT" onchange="applyVF()">
+            <option value="">🚗 ทุกประเภท</option>
+            <option value="รถยนต์">🚗 รถยนต์</option>
+            <option value="รถจักรยานยนต์">🏍 รถจักรยานยนต์</option>
+          </select>
+          <select class="fsel" id="fVP" onchange="applyVF()"><option value="">📍 ทุกจังหวัด</option></select>
+          <button class="btn-rst" onclick="resetVF()">↺ รีเซ็ต</button>
+        </div>
+
+        <div class="sgrid">
+          <div class="sc">  <div class="sc-ico">🚗</div><div><div class="sc-v" id="vTot">—</div><div class="sc-l">รวมทั้งหมด</div></div></div>
+          <div class="sc">  <div class="sc-ico">🚗</div><div><div class="sc-v" id="vCar">—</div><div class="sc-l">รถยนต์</div></div></div>
+          <div class="sc o"><div class="sc-ico">🏍</div><div><div class="sc-v" id="vMoto">—</div><div class="sc-l">รถจักรยานยนต์</div></div></div>
+          <div class="sc g"><div class="sc-ico">📍</div><div><div class="sc-v" id="vProv">—</div><div class="sc-l">จำนวนจังหวัด</div></div></div>
+        </div>
+
+        <!-- Vehicle type donut + Province label list side by side -->
+        <div class="pgrid" style="grid-template-columns:1fr 1fr">
+          <div class="panel">
+            <div class="panel-t">🚗 สัดส่วนประเภทรถ</div>
+            <div class="ch-wrap"><canvas id="cVType"></canvas></div>
+          </div>
+          <div class="panel">
+            <div class="panel-t">📍 จำนวนรถตามจังหวัดทะเบียน</div>
+            <div class="ll" id="llProv"></div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="sec-hd">
+          <div class="sec-t">🚗 รายการยานพาหนะ</div>
+          <div class="sec-acts">
+            <div class="sbox"><span style="color:var(--txt3)">⌕</span><input type="text" id="srchVeh" placeholder="ค้นหา..." oninput="filterVeh()"></div>
+            <span class="cnt-badge" id="cntVeh">0 คัน</span>
+          </div>
+        </div>
+        <div class="tw">
+          <div class="ts">
+            <table>
+              <thead><tr>
+                <th>#</th>
+                <th onclick="sT('veh',0)">ยศ <span class="si">↕</span></th>
+                <th onclick="sT('veh',1)">ชื่อ-สกุล <span class="si">↕</span></th>
+                <th onclick="sT('veh',2)">สังกัด <span class="si">↕</span></th>
+                <th onclick="sT('veh',3)">ประเภท <span class="si">↕</span></th>
+                <th onclick="sT('veh',4)">ทะเบียน <span class="si">↕</span></th>
+                <th onclick="sT('veh',6)">จังหวัด <span class="si">↕</span></th>
+              </tr></thead>
+              <tbody id="tbVeh"><tr><td colspan="7" class="empty"><span class="ei">⏳</span>กำลังโหลด...</td></tr></tbody>
+            </table>
+          </div>
+          <div class="pg" id="pgVeh"></div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           DISEASES
+      ════════════════════════════════════════════ -->
+      <div class="page" id="page-dis">
+        <div class="fbar">
+          <select class="fsel" id="fDU" onchange="applyDF()"><option value="">📂 ทุกสังกัด</option></select>
+          <select class="fsel" id="fDD" onchange="applyDF()"><option value="">🏥 ทุกโรค</option></select>
+          <select class="fsel" id="fDR" onchange="applyDF()">
+            <option value="">👥 ทุกความสัมพันธ์</option>
+            <option value="เจ้าของบ้านพัก">เจ้าของบ้านพัก</option>
+            <option value="ผู้พักอาศัยร่วม">ผู้พักอาศัยร่วม</option>
+          </select>
+          <button class="btn-rst" onclick="resetDF()">↺ รีเซ็ต</button>
+        </div>
+
+        <div class="sgrid">
+          <div class="sc">  <div class="sc-ico">👥</div><div><div class="sc-v" id="dsTot">—</div><div class="sc-l">รายการทั้งหมด</div></div></div>
+          <div class="sc">  <div class="sc-ico">🏠</div><div><div class="sc-v" id="dsOwn">—</div><div class="sc-l">เจ้าของบ้านพัก</div></div></div>
+          <div class="sc t"><div class="sc-ico">👨‍👩‍👧</div><div><div class="sc-v" id="dsMem">—</div><div class="sc-l">ผู้พักอาศัยร่วม</div></div></div>
+          <div class="sc r"><div class="sc-ico">🏥</div><div><div class="sc-v" id="dsHas">—</div><div class="sc-l">มีโรคประจำตัว</div></div></div>
+          <div class="sc g"><div class="sc-ico">✅</div><div><div class="sc-v" id="dsNo">—</div><div class="sc-l">ไม่มีโรค</div></div></div>
+        </div>
+
+        <!-- Stacked disease bar (all diseases) -->
+        <div class="panel" style="margin-bottom:.75rem">
+          <div class="panel-t">🏥 สถิติโรคประจำตัว — เจ้าของบ้านพัก vs ผู้พักอาศัยร่วม (ทุกโรค)</div>
+          <div class="ch-wrap xtall"><canvas id="cDisStack"></canvas></div>
+        </div>
+
+        <!-- Age + Gender charts -->
+        <div class="pgrid">
+          <div class="panel"><div class="panel-t">📅 การกระจายตัวตามช่วงอายุ</div><div class="ch-wrap"><canvas id="cDisAge"></canvas></div></div>
+          <div class="panel"><div class="panel-t">👥 สัดส่วนเพศ (ผู้มีโรค)</div><div class="ch-wrap"><canvas id="cDisGender"></canvas></div></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="sec-hd">
+          <div class="sec-t">🏥 รายการโรคประจำตัว</div>
+          <div class="sec-acts">
+            <div class="sbox"><span style="color:var(--txt3)">⌕</span><input type="text" id="srchDis" placeholder="ค้นหา..." oninput="filterDis()"></div>
+            <span class="cnt-badge" id="cntDis">0 รายการ</span>
+          </div>
+        </div>
+        <div class="tw">
+          <div class="ts">
+            <table>
+              <thead><tr>
+                <th>#</th>
+                <th onclick="sT('dis',1)">ยศ <span class="si">↕</span></th>
+                <th onclick="sT('dis',2)">ชื่อ เจ้าของ <span class="si">↕</span></th>
+                <th onclick="sT('dis',4)">สังกัด <span class="si">↕</span></th>
+                <th onclick="sT('dis',5)">ความสัมพันธ์ <span class="si">↕</span></th>
+                <th onclick="sT('dis',9)">อายุ <span class="si">↕</span></th>
+                <th onclick="sT('dis',35)">รวม <span class="si">↕</span></th>
+                <th>โรคที่มี</th>
+              </tr></thead>
+              <tbody id="tbDis"><tr><td colspan="15" class="empty"><span class="ei">⏳</span>กำลังโหลด...</td></tr></tbody>
+            </table>
+          </div>
+          <div class="pg" id="pgDis"></div>
+        </div>
+      </div>
+
+    </div><!-- /mc -->
+  </div><!-- /ca -->
+</div><!-- /app -->
+
+<script>
+/* ────────────────────────────────────────────────────
+   CONSTANTS & STATE
+──────────────────────────────────────────────────── */
+var PW = 'W2ICT.2026';
+
+// ── กำหนด URL ของ Apps Script Web App ──────────────
+// ใส่ URL ที่ได้จากการ Deploy ตรงนี้ (ใช้เมื่อรันบน GitHub Pages)
+// ตัวอย่าง: 'https://script.google.com/macros/s/AKfycb.../exec'
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx4AsH2ZxuHy5-45IQ-0YGXoTfiupXobiw94FKKDmb0PrPpGywph9eLHmmRhgDLNqCU/exec';
+
+var DCOLS = [
+  {i:11,n:'ความดันโลหิตสูง'},{i:12,n:'เบาหวาน'},{i:13,n:'ไขมันในเลือดสูง'},
+  {i:14,n:'โรคหัวใจ'},{i:15,n:'โรคไต'},{i:16,n:'เก๊าท์'},{i:17,n:'ภูมิแพ้'},
+  {i:18,n:'ไทรอยด์'},{i:19,n:'หอบหืด/ปอด'},{i:20,n:'กรดไหลย้อน'},
+  {i:21,n:'โรคมะเร็ง'},{i:22,n:'หลอดเลือดสมอง'},{i:23,n:'กระดูก/ข้อ'},
+  {i:24,n:'ต่อมลูกหมาก'},{i:25,n:'ธาลัสซีเมีย'},{i:26,n:'SLE/รูมาตอย'},
+  {i:27,n:'สะเก็ดเงิน'},{i:28,n:'โรคอ้วน'},{i:29,n:'แพนิค/ซึมเศร้า'},
+  {i:30,n:'กล้ามเนื้ออ่อนแรง'},{i:31,n:'สมองเสื่อม'},{i:32,n:'ติดเตียง'},
+  {i:33,n:'G6PD'},{i:34,n:'ไมเกรน'}
+];
+
+var S = {
+  raw:{off:[],veh:[],dis:[]}, filt:{off:[],veh:[],dis:[]},
+  sort:{off:{c:-1,d:1},veh:{c:-1,d:1},dis:{c:-1,d:1}},
+  pg:{off:1,veh:1,dis:1}, pp:{off:25,veh:25,dis:25},
+  cur:'dash', ch:{}, col:false
+};
+
+var PT = {dash:'📊 Dashboard',off:'👨‍✈️ ข้อมูลข้าราชการ',veh:'🚗 ข้อมูลยานพาหนะ',dis:'🏥 ข้อมูลโรคประจำตัว'};
+
+/* ────────────────────────────────────────────────────
+   INIT
+──────────────────────────────────────────────────── */
+window.addEventListener('load',function(){
+  setTimeout(function(){
+    var l=q('gL'); l.style.opacity='0';
+    setTimeout(function(){l.style.display='none';
+      q('loginSc').classList.add('on'); q('pwIn').focus();},400);
+  },600);
+  q('pwIn').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+});
+
+/* ────────────────────────────────────────────────────
+   AUTH
+──────────────────────────────────────────────────── */
+function doLogin(){
+  if(q('pwIn').value===PW){
+    q('loginSc').classList.remove('on');
+    q('app').classList.add('on');
+    loadData();
+  } else {
+    q('lerr').textContent='รหัสผ่านไม่ถูกต้อง';
+    q('pwIn').value=''; q('pwIn').focus();
+  }
+}
+function doLogout(){
+  q('app').classList.remove('on');
+  q('loginSc').classList.add('on');
+  q('pwIn').value=''; q('lerr').textContent='';
+}
+
+/* ────────────────────────────────────────────────────
+   DATA LOAD  (รองรับ 2 โหมด)
+   - โหมด Apps Script  : ใช้ google.script.run
+   - โหมด GitHub Pages : ใช้ fetch() ไปที่ APPS_SCRIPT_URL
+──────────────────────────────────────────────────── */
+function loadData(){
+  // ─ โหมด Apps Script (ฝังอยู่ใน Sheet) ─────────────
+  if(typeof google !== 'undefined' && google.script && google.script.run){
+    google.script.run
+      .withSuccessHandler(onLoad)
+      .withFailureHandler(onErr)
+      .getAllData();
+    return;
+  }
+
+  // ─ โหมด GitHub Pages / ภายนอก Apps Script ──────────
+  if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'PASTE_YOUR_APPS_SCRIPT_URL_HERE'){
+    onErr('⚙️ กรุณาแก้ไข APPS_SCRIPT_URL ใน index.html\n\nเปิดไฟล์ index.html แล้วหาบรรทัด:\nvar APPS_SCRIPT_URL = \'PASTE_YOUR_APPS_SCRIPT_URL_HERE\';\nแล้วใส่ URL จาก Apps Script Web App ของคุณ');
+    return;
+  }
+  q('gL').style.display='flex'; // แสดง loader ระหว่างดึงข้อมูล
+  fetch(APPS_SCRIPT_URL + '?action=getData', {redirect:'follow'})
+    .then(function(res){
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    })
+    .then(function(data){
+      q('gL').style.opacity='0';
+      setTimeout(function(){q('gL').style.display='none';},300);
+      onLoad(data);
+    })
+    .catch(function(err){ onErr('ดึงข้อมูลไม่ได้: ' + err); });
+}
+function onLoad(r){
+  if(!r||!r.success){onErr(r?r.error:'error');return;}
+  var skip=function(a){
+    if(!a||a.length<2)return[];
+    return a.slice(1).filter(function(row){var v=row[0]; return v!==''&&v!==null&&v!==undefined;});
+  };
+  S.raw.off=skip(r.officials);
+  S.raw.veh=skip(r.vehicles);
+  S.raw.dis=skip(r.diseases);
+  S.filt.off=S.raw.off.slice();
+  S.filt.veh=S.raw.veh.slice();
+  S.filt.dis=S.raw.dis.slice();
+
+  q('bdgOff').textContent=S.raw.off.length;
+  q('bdgVeh').textContent=S.raw.veh.length;
+  q('bdgDis').textContent=S.raw.dis.length;
+  if(r.lastUpdated) q('updTxt').innerHTML='อัปเดต '+r.lastUpdated;
+
+  populateFilters();
+  renderAll();
+}
+function onErr(e){console.error(e);alert('⚠️ โหลดข้อมูลไม่ได้\n'+e);}
+
+function renderAll(){
+  renderDashPage();
+  renderOffDash(); renderTable('off');
+  renderVehDash(); renderTable('veh');
+  renderDisDash(); renderTable('dis');
+}
+
+/* ────────────────────────────────────────────────────
+   NAV
+──────────────────────────────────────────────────── */
+function goPage(name){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
+  q('page-'+name).classList.add('on');
+  document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('on');});
+  var ni=q('n-'+name); if(ni)ni.classList.add('on');
+  q('tbT').textContent=PT[name]||name;
+  S.cur=name; closeSB();
+}
+
+function toggleSB(){
+  q('sb').classList.toggle('open');
+  q('sbOv').classList.toggle('on');
+}
+function closeSB(){q('sb').classList.remove('open');q('sbOv').classList.remove('on');}
+
+function toggleCol(){
+  S.col=!S.col;
+  q('sb').classList.toggle('col',S.col);
+  q('togIco').textContent=S.col?'▶':'◀';
+}
+
+function onGS(v){
+  var p=S.cur; if(p==='dash')return;
+  var m={off:'srchOff',veh:'srchVeh',dis:'srchDis'};
+  var el=q(m[p]); if(!el)return;
+  el.value=v;
+  if(p==='off')filterOff(); else if(p==='veh')filterVeh(); else filterDis();
+}
+
+/* ────────────────────────────────────────────────────
+   POPULATE FILTERS
+──────────────────────────────────────────────────── */
+function populateFilters(){
+  // Officials
+  var units={},ranks={};
+  S.raw.off.forEach(function(r){
+    var u=str(r[5]); if(u)units[u]=1;
+    var rk=normRank(r[1]); if(rk)ranks[rk]=1;
+  });
+  fillSel('fOU',Object.keys(units).sort(),'📂 ทุกหน่วย');
+  fillSel('fOR',Object.keys(ranks).sort(),'⭐ ทุกยศ');
+
+  // Vehicles
+  var vu={},vp={};
+  S.raw.veh.forEach(function(r){
+    var u=str(r[2]); if(u)vu[u]=1;
+    var p=str(r[6]||r[5]); if(p)vp[p]=1;
+  });
+  fillSel('fVU',Object.keys(vu).sort(),'📂 ทุกสังกัด');
+  fillSel('fVP',Object.keys(vp).sort(),'📍 ทุกจังหวัด');
+
+  // Diseases units
+  var du={};
+  S.raw.dis.forEach(function(r){var u=str(r[4]);if(u)du[u]=1;});
+  fillSel('fDU',Object.keys(du).sort(),'📂 ทุกสังกัด');
+  // Disease types
+  var sel=q('fDD');
+  DCOLS.forEach(function(d){
+    var o=document.createElement('option'); o.value=String(d.i); o.textContent='🏥 '+d.n; sel.appendChild(o);
+  });
+}
+function fillSel(id,vals,ph){
+  var s=q(id); s.innerHTML='<option value="">'+ph+'</option>';
+  vals.forEach(function(v){var o=document.createElement('option');o.value=v;o.textContent=v;s.appendChild(o);});
+}
+
+/* ────────────────────────────────────────────────────
+   FILTER APPLY
+──────────────────────────────────────────────────── */
+function applyOF(){
+  var u=q('fOU').value, r=q('fOR').value, o=q('fOO').value, txt=q('srchOff').value.trim().toLowerCase();
+  S.filt.off=S.raw.off.filter(function(row){
+    if(u&&str(row[5])!==u)return false;
+    if(r&&normRank(row[1])!==r)return false;
+    if(o&&orgCat(row[5])!==o)return false;
+    if(txt&&!row.some(function(c){return str(c).toLowerCase().includes(txt);}))return false;
+    return true;
+  });
+  S.pg.off=1; renderOffDash(); renderTable('off');
+}
+function filterOff(){applyOF();}
+function resetOF(){q('fOU').value='';q('fOR').value='';q('fOO').value='';q('srchOff').value='';S.filt.off=S.raw.off.slice();S.pg.off=1;renderOffDash();renderTable('off');}
+
+function applyVF(){
+  var u=q('fVU').value, t=q('fVT').value, p=q('fVP').value, txt=q('srchVeh').value.trim().toLowerCase();
+  S.filt.veh=S.raw.veh.filter(function(row){
+    if(u&&str(row[2])!==u)return false;
+    if(t&&str(row[3])!==t)return false;
+    if(p&&str(row[6]||row[5])!==p)return false;
+    if(txt&&!row.some(function(c){return str(c).toLowerCase().includes(txt);}))return false;
+    return true;
+  });
+  S.pg.veh=1; renderVehDash(); renderTable('veh');
+}
+function filterVeh(){applyVF();}
+function resetVF(){q('fVU').value='';q('fVT').value='';q('fVP').value='';q('srchVeh').value='';S.filt.veh=S.raw.veh.slice();S.pg.veh=1;renderVehDash();renderTable('veh');}
+
+function applyDF(){
+  var u=q('fDU').value, d=q('fDD').value, r=q('fDR').value, txt=q('srchDis').value.trim().toLowerCase();
+  S.filt.dis=S.raw.dis.filter(function(row){
+    if(u&&str(row[4])!==u)return false;
+    if(r&&str(row[5])!==r)return false;
+    if(d&&!chk(row[parseInt(d)]))return false;
+    if(txt&&!row.some(function(c){return str(c).toLowerCase().includes(txt);}))return false;
+    return true;
+  });
+  S.pg.dis=1; renderDisDash(); renderTable('dis');
+}
+function filterDis(){applyDF();}
+function resetDF(){q('fDU').value='';q('fDD').value='';q('fDR').value='';q('srchDis').value='';S.filt.dis=S.raw.dis.slice();S.pg.dis=1;renderDisDash();renderTable('dis');}
+
+/* ────────────────────────────────────────────────────
+   SORT
+──────────────────────────────────────────────────── */
+function sT(name,col){
+  var st=S.sort[name];
+  if(st.c===col)st.d*=-1; else{st.c=col;st.d=1;}
+  S.filt[name].sort(function(a,b){
+    var av=a[col],bv=b[col];
+    var an=parseFloat(str(av).replace(/[^0-9.-]/g,'')),bn=parseFloat(str(bv).replace(/[^0-9.-]/g,''));
+    if(!isNaN(an)&&!isNaN(bn))return(an-bn)*st.d;
+    return str(av).localeCompare(str(bv),'th')*st.d;
+  });
+  S.pg[name]=1; renderTable(name);
+}
+
+/* ────────────────────────────────────────────────────
+   RENDER DASHBOARD (OVERVIEW)
+──────────────────────────────────────────────────── */
+function renderDashPage(){
+  var off=S.raw.off,veh=S.raw.veh,dis=S.raw.dis;
+  q('dOff').textContent=off.length;
+  q('dVeh').textContent=veh.length;
+  q('dDis').textContent=dis.filter(function(r){return parseInt(r[35])>0;}).length;
+  q('dHou').textContent=off.filter(function(r){return r[17]!==''&&r[17]!==null;}).length;
+
+  var rk=rankCount(off,8);
+  mkChart('cDRank','doughnut',{
+    labels:rk.labels,
+    datasets:[{data:rk.vals,backgroundColor:['#3b82f6','#60a5fa','#93c5fd','#2563eb','#1d4ed8','#7c3aed','#a78bfa','#c4b5fd'],borderWidth:2,borderColor:'#fff'}]
+  },{legend:{position:'right',labels:{font:{size:10},boxWidth:10}}});
+
+  var vt=typeCount(veh);
+  mkChart('cDVeh','doughnut',{
+    labels:vt.labels,
+    datasets:[{data:vt.vals,backgroundColor:['#3b82f6','#f97316','#22c55e','#a855f7'],borderWidth:2,borderColor:'#fff'}]
+  },{legend:{position:'right',labels:{font:{size:10},boxWidth:10}}});
+
+  buildDisTopBar('cDDis',dis);
+}
+
+/* ────────────────────────────────────────────────────
+   RENDER OFFICIALS DASHBOARD
+──────────────────────────────────────────────────── */
+function renderOffDash(){
+  var rows=S.filt.off;
+  q('oTot').textContent=rows.length;
+  var bn2=0,gso=0,grw=0,male=0,fem=0;
+  rows.forEach(function(r){
+    var o=orgCat(r[5]);
+    if(o==='บน.2')bn2++;else if(o==='กซอ.2')gso++;else if(o==='กรว.4')grw++;
+    if(gender(r[1])==='หญิง')fem++;else male++;
+  });
+  q('oBn2').textContent=bn2;q('oGso').textContent=gso;q('oGrw').textContent=grw;
+  q('oMale').textContent=male;q('oFem').textContent=fem;
+
+  // Rank label list
+  var rk=rankCount(rows,30);
+  renderLabelList('llRank',rk.labels,rk.vals,'#3b82f6');
+
+  // Unit label list
+  var uc={};
+  rows.forEach(function(r){var u=str(r[5])||'ไม่ระบุ';uc[u]=(uc[u]||0)+1;});
+  var us=sortObj(uc);
+  renderLabelList('llUnit',us.map(function(x){return x[0];}),us.map(function(x){return x[1];}), '#22c55e');
+
+  // Org+Gender grouped bar
+  var orgs=['บน.2','กซอ.2','กรว.4','อื่นๆ'];
+  var mc=orgs.map(function(o){return rows.filter(function(r){return orgCat(r[5])===o&&gender(r[1])!=='หญิง';}).length;});
+  var fc=orgs.map(function(o){return rows.filter(function(r){return orgCat(r[5])===o&&gender(r[1])==='หญิง';}).length;});
+  mkChart('cOOrg','bar',{
+    labels:orgs,
+    datasets:[
+      {label:'ชาย',data:mc,backgroundColor:'#3b82f6',borderRadius:4},
+      {label:'หญิง',data:fc,backgroundColor:'#a855f7',borderRadius:4}
+    ]
+  },{legend:{position:'top',labels:{font:{size:11},boxWidth:10}},
+     scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.04)'}}}});
+}
+
+/* ────────────────────────────────────────────────────
+   RENDER VEHICLES DASHBOARD
+──────────────────────────────────────────────────── */
+function renderVehDash(){
+  var rows=S.filt.veh;
+  var cars  =rows.filter(function(r){return str(r[3])==='รถยนต์';}).length;
+  var motos =rows.filter(function(r){return str(r[3]).includes('จักรยาน');}).length;
+  var provs={};rows.forEach(function(r){var p=str(r[6]||r[5]);if(p)provs[p]=1;});
+  q('vTot').textContent=rows.length;
+  q('vCar').textContent=cars;
+  q('vMoto').textContent=motos;
+  q('vProv').textContent=Object.keys(provs).length;
+
+  var vt=typeCount(rows);
+  mkChart('cVType','doughnut',{
+    labels:vt.labels,
+    datasets:[{data:vt.vals,backgroundColor:['#3b82f6','#f97316','#22c55e','#a855f7'],borderWidth:2,borderColor:'#fff'}]
+  },{legend:{position:'bottom',labels:{font:{size:11},boxWidth:10}}});
+
+  // Province label list
+  var pc={};rows.forEach(function(r){var p=str(r[6]||r[5]||'ไม่ระบุ');if(p)pc[p]=(pc[p]||0)+1;});
+  var ps=sortObj(pc);
+  renderLabelList('llProv',ps.map(function(x){return x[0];}),ps.map(function(x){return x[1];}), '#f97316');
+}
+
+/* ────────────────────────────────────────────────────
+   RENDER DISEASES DASHBOARD
+──────────────────────────────────────────────────── */
+function renderDisDash(){
+  var rows=S.filt.dis;
+  var own=rows.filter(function(r){return str(r[5]).includes('เจ้าของ');});
+  var mem=rows.filter(function(r){return str(r[5]).includes('ผู้พักอาศัย');});
+  var hasDis=rows.filter(function(r){return parseInt(r[35])>0;}).length;
+  q('dsTot').textContent=rows.length;
+  q('dsOwn').textContent=own.length;
+  q('dsMem').textContent=mem.length;
+  q('dsHas').textContent=hasDis;
+  q('dsNo').textContent=rows.length-hasDis;
+
+  // ── Stacked bar — ALL diseases ──────────────────
+  // Calculate counts for each disease for owners & members
+  var combined=DCOLS.map(function(d){
+    var o=own.filter(function(r){return chk(r[d.i]);}).length;
+    var m=mem.filter(function(r){return chk(r[d.i]);}).length;
+    return{n:d.n,o:o,m:m,t:o+m};
+  }).sort(function(a,b){return b.t-a.t;}); // Sort by total (highest first)
+
+  mkChart('cDisStack','bar',{
+    labels:combined.map(function(x){return x.n;}),
+    datasets:[
+      {label:'เจ้าของบ้านพัก',data:combined.map(function(x){return x.o;}),
+       backgroundColor:'#3b82f6',borderRadius:3,stack:'s'},
+      {label:'ผู้พักอาศัยร่วม',data:combined.map(function(x){return x.m;}),
+       backgroundColor:'#fb923c',borderRadius:3,stack:'s'}
+    ]
+  },{
+    legend:{position:'top',labels:{font:{size:11},boxWidth:10}},
+    indexAxis:'y',
+    scales:{
+      x:{stacked:true,beginAtZero:true,grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:11}}},
+      y:{stacked:true,grid:{display:false},ticks:{font:{size:11}}}
+    }
+  });
+
+  // Age distribution
+  var bands={'< 20':0,'20–29':0,'30–39':0,'40–49':0,'50–59':0,'60 +':0,'ไม่ระบุ':0};
+  rows.forEach(function(r){
+    var a=parseInt(r[9]);
+    if(isNaN(a)||a<=0)bands['ไม่ระบุ']++;
+    else if(a<20)bands['< 20']++;
+    else if(a<30)bands['20–29']++;
+    else if(a<40)bands['30–39']++;
+    else if(a<50)bands['40–49']++;
+    else if(a<60)bands['50–59']++;
+    else bands['60 +']++;
+  });
+  mkChart('cDisAge','bar',{
+    labels:Object.keys(bands),
+    datasets:[{label:'จำนวน',data:Object.values(bands),
+      backgroundColor:['#bfdbfe','#93c5fd','#60a5fa','#3b82f6','#2563eb','#1d4ed8','#e2e8f0'],
+      borderRadius:4}]
+  },{legend:{display:false},
+     scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.04)'}}}});
+
+  // Gender of disease patients
+  var dp=rows.filter(function(r){return parseInt(r[35])>0;});
+  var gm=dp.filter(function(r){return gender(r[6]||r[1])!=='หญิง';}).length;
+  var gf=dp.filter(function(r){return gender(r[6]||r[1])==='หญิง';}).length;
+  mkChart('cDisGender','doughnut',{
+    labels:['ชาย','หญิง'],
+    datasets:[{data:[gm,gf],backgroundColor:['#3b82f6','#a855f7'],borderWidth:2,borderColor:'#fff'}]
+  },{legend:{position:'bottom',labels:{font:{size:11},boxWidth:10}}});
+}
+
+/* ────────────────────────────────────────────────────
+   RENDER TABLES
+──────────────────────────────────────────────────── */
+function renderTable(name){
+  if(name==='off')renderOff();
+  else if(name==='veh')renderVeh();
+  else renderDis();
+}
+
+function renderOff(){
+  var rows=S.filt.off,pp=S.pp.off,pg=S.pg.off;
+  var s=(pg-1)*pp, slice=rows.slice(s,s+pp);
+  q('cntOff').textContent=rows.length+' คน';
+  var h='';
+  if(!slice.length){h='<tr><td colspan="11" class="empty"><span class="ei">🔍</span>ไม่พบข้อมูล</td></tr>';}
+  else slice.forEach(function(r,i){
+    var st=str(r[15]);
+    var sb=st==='ปกติ'?'<span class="bdg b-green">ปกติ</span>':st?'<span class="bdg b-gray">'+esc(st)+'</span>':'—';
+    var zone=r[17]?'<span class="bdg b-blue">เขต '+esc(r[17])+'</span>':'—';
+    h+='<tr><td class="mu">'+(s+i+1)+'</td>'+
+      '<td><span class="bdg b-purple">'+esc(r[1])+'</span></td>'+
+      '<td class="fw7">'+esc(r[2])+'</td><td>'+esc(r[3])+'</td>'+
+      '<td class="wrap">'+esc(r[5])+'</td><td class="wrap">'+esc(r[11])+'</td>'+
+      '<td>'+sb+'</td><td>'+zone+'</td>'+
+      '<td style="text-align:center">'+(r[18]||'—')+'</td>'+
+      '<td style="text-align:center">'+(r[19]||'—')+'</td>'+
+      '<td style="font-size:.72rem;color:var(--txt2)">'+esc(str(r[14]).replace(/\\_/g,'_'))+'</td></tr>';
+  });
+  q('tbOff').innerHTML=h;
+  renderPg('off',rows.length,pp,pg);
+}
+
+function renderVeh(){
+  var rows=S.filt.veh,pp=S.pp.veh,pg=S.pg.veh;
+  var s=(pg-1)*pp,slice=rows.slice(s,s+pp);
+  q('cntVeh').textContent=rows.length+' คัน';
+  var h='';
+  if(!slice.length){h='<tr><td colspan="7" class="empty"><span class="ei">🔍</span>ไม่พบข้อมูล</td></tr>';}
+  else slice.forEach(function(r,i){
+    var t=str(r[3]);
+    var tb=t==='รถยนต์'?'<span class="bdg b-blue">🚗 รถยนต์</span>':
+           t.includes('จักรยาน')?'<span class="bdg b-orange">🏍 รถจักรยานยนต์</span>':
+           '<span class="bdg b-gray">'+esc(t)+'</span>';
+    h+='<tr><td class="mu">'+(s+i+1)+'</td>'+
+      '<td><span class="bdg b-purple">'+esc(r[0])+'</span></td>'+
+      '<td class="fw7">'+esc(r[1])+'</td><td>'+esc(r[2])+'</td>'+
+      '<td>'+tb+'</td>'+
+      '<td><span class="fw7 mono">'+esc(r[4])+'</span></td>'+
+      '<td>'+esc(r[6]||r[5]||'—')+'</td></tr>';
+  });
+  q('tbVeh').innerHTML=h;
+  renderPg('veh',rows.length,pp,pg);
+}
+
+function renderDis(){
+  var rows=S.filt.dis,pp=S.pp.dis,pg=S.pg.dis;
+  // Table แสดงเฉพาะคนที่มีโรค — สถิติ Dashboard นับทั้งหมดตามปกติ
+  var withDis=rows.filter(function(r){return parseInt(r[35])>0;});
+  var s=(pg-1)*pp,slice=withDis.slice(s,s+pp);
+  q('cntDis').textContent=rows.length+' รายการ (มีโรค '+withDis.length+' คน)';
+  var h='';
+  if(!slice.length){h='<tr><td colspan="8" class="empty"><span class="ei">🔍</span>ไม่พบข้อมูลผู้มีโรคประจำตัว</td></tr>';}
+  else slice.forEach(function(r,i){
+    var rel=str(r[5]);
+    var rb=rel.includes('เจ้าของ')?'<span class="bdg b-blue">เจ้าของ</span>':
+           rel?'<span class="bdg b-gray">'+esc(rel)+'</span>':'—';
+    var tot=parseInt(r[35])||0;
+    var tb='<span class="bdg '+(tot>=3?'b-red':tot>=2?'b-orange':'b-green')+'">'+tot+'</span>';
+    // สร้างรายชื่อโรคจาก checkmark
+    var diseaseList=DCOLS.filter(function(d){return chk(r[d.i]);}).map(function(d){return d.n;});
+    var dlHtml=diseaseList.length
+      ? diseaseList.map(function(n){return'<span class="dis-tag">'+esc(n)+'</span>';}).join('')
+      : '<span class="mu">—</span>';
+    h+='<tr><td class="mu">'+(s+i+1)+'</td>'+
+      '<td><span class="bdg b-purple">'+esc(r[1]||r[6])+'</span></td>'+
+      '<td class="fw7">'+esc(r[2])+'</td>'+
+      '<td>'+esc(r[4])+'</td>'+
+      '<td>'+rb+'</td>'+
+      '<td style="text-align:center">'+(r[9]||'—')+'</td>'+
+      '<td style="text-align:center">'+tb+'</td>'+
+      '<td class="wrap" style="min-width:200px">'+dlHtml+'</td></tr>';
+  });
+  q('tbDis').innerHTML=h;
+  renderPg('dis',withDis.length,pp,pg);
+}
+
+/* ────────────────────────────────────────────────────
+   PAGINATION
+──────────────────────────────────────────────────── */
+function renderPg(name,total,pp,cur){
+  var tp=Math.ceil(total/pp)||1;
+  var s=(cur-1)*pp+1, e=Math.min(cur*pp,total);
+  var el=q('pg'+name.charAt(0).toUpperCase()+name.slice(1));
+  if(!el)return;
+  var sp=Math.max(1,cur-2),ep=Math.min(tp,sp+4);
+  if(ep-sp<4)sp=Math.max(1,ep-4);
+  var btns='';
+  if(sp>1)btns+='<button class="pb" onclick="goPg(\''+name+'\',1)">1</button>';
+  if(sp>2)btns+='<button class="pb" disabled>…</button>';
+  for(var p=sp;p<=ep;p++)btns+='<button class="pb'+(p===cur?' on':'')+'" onclick="goPg(\''+name+'\','+p+')">'+p+'</button>';
+  if(ep<tp-1)btns+='<button class="pb" disabled>…</button>';
+  if(ep<tp)btns+='<button class="pb" onclick="goPg(\''+name+'\','+tp+')">'+tp+'</button>';
+  el.innerHTML='<div class="pg-info">'+s+'–'+e+' / '+total+'</div>'+
+    '<div class="pg-ctrl">'+
+    '<button class="pb" onclick="goPg(\''+name+'\','+(cur-1)+')" '+(cur<=1?'disabled':'')+'>‹</button>'+
+    btns+
+    '<button class="pb" onclick="goPg(\''+name+'\','+(cur+1)+')" '+(cur>=tp?'disabled':'')+'>›</button>'+
+    '<select class="ppsel" onchange="chPP(\''+name+'\',this.value)">'+
+    [10,25,50,100].map(function(n){return'<option value="'+n+'"'+(n===pp?' selected':'')+'>'+n+'/หน้า</option>';}).join('')+
+    '</select></div>';
+}
+function goPg(name,p){
+  var tp=Math.ceil(S.filt[name].length/S.pp[name])||1;
+  S.pg[name]=Math.max(1,Math.min(p,tp));
+  renderTable(name);
+}
+function chPP(name,v){S.pp[name]=parseInt(v);S.pg[name]=1;renderTable(name);}
+
+/* ────────────────────────────────────────────────────
+   LABEL LIST RENDERER
+──────────────────────────────────────────────────── */
+function renderLabelList(containerId, labels, vals, color){
+  var max=vals.length?Math.max.apply(null,vals):1;
+  var h='';
+  labels.forEach(function(lbl,i){
+    var pct=(vals[i]/max*100).toFixed(1);
+    h+='<div class="ll-item">'+
+      '<span class="ll-name" title="'+esc(lbl)+'">'+esc(lbl)+'</span>'+
+      '<div class="ll-bar-w"><div class="ll-bar-f" style="width:'+pct+'%;background:'+color+'"></div></div>'+
+      '<span class="ll-cnt" style="color:'+color+'">'+vals[i]+'</span>'+
+      '</div>';
+  });
+  q(containerId).innerHTML=h||'<div class="mu" style="font-size:.8rem;padding:.5rem 0">ไม่มีข้อมูล</div>';
+}
+
+/* ────────────────────────────────────────────────────
+   CHART HELPERS
+──────────────────────────────────────────────────── */
+function mkChart(id,type,data,extraOpts){
+  var el=q(id); if(!el)return;
+  if(S.ch[id]){S.ch[id].destroy();delete S.ch[id];}
+  var opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true}}};
+  if(extraOpts){
+    if(extraOpts.legend)opts.plugins.legend=extraOpts.legend;
+    if(extraOpts.scales)opts.scales=extraOpts.scales;
+    if(extraOpts.indexAxis)opts.indexAxis=extraOpts.indexAxis;
+  }
+  S.ch[id]=new Chart(el,{type:type,data:data,options:opts});
+}
+
+function buildDisTopBar(id,rows){
+  var top=DCOLS.map(function(d){
+    return{n:d.n,c:rows.filter(function(r){return chk(r[d.i]);}).length};
+  }).sort(function(a,b){return b.c-a.c;}).slice(0,10);
+  mkChart(id,'bar',{
+    labels:top.map(function(x){return x.n;}),
+    datasets:[{label:'จำนวน',data:top.map(function(x){return x.c;}),backgroundColor:'#3b82f6',borderRadius:4}]
+  },{indexAxis:'y',legend:{display:false},
+     scales:{x:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.04)'}},y:{grid:{display:false},ticks:{font:{size:11}}}}});
+}
+
+function rankCount(rows,top){
+  var c={};
+  rows.forEach(function(r){var rk=normRank(r[1]);if(rk)c[rk]=(c[rk]||0)+1;});
+  var s=sortObj(c).slice(0,top||30);
+  return{labels:s.map(function(x){return x[0];}),vals:s.map(function(x){return x[1];})};
+}
+function typeCount(rows){
+  var c={};
+  rows.forEach(function(r){var t=str(r[3])||'ไม่ระบุ';c[t]=(c[t]||0)+1;});
+  var s=sortObj(c);
+  return{labels:s.map(function(x){return x[0];}),vals:s.map(function(x){return x[1];})};
+}
+
+/* ────────────────────────────────────────────────────
+   UTILS
+──────────────────────────────────────────────────── */
+function q(id){return document.getElementById(id);}
+function str(v){return String(v||'').trim();}
+function esc(s){
+  return str(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\\_/g,'_');
+}
+function chk(v){return v==='✓'||v===true||v===1||str(v)==='✓';}
+function normRank(r){return str(r).replace(/^ว่าที่\s+/,'').replace(/\s*หญิง\s*$/,'').trim();}
+function gender(r){return (str(r).includes('หญิง')||str(r).includes('น.ส.'))?'หญิง':'ชาย';}
+function orgCat(u){
+  var s=str(u);
+  if(s.includes('กรว'))return 'กรว.4';
+  if(s.includes('กซอ'))return 'กซอ.2';
+  if(s.includes('บน'))return 'บน.2';
+  return 'อื่นๆ';
+}
+function sortObj(obj){
+  return Object.entries(obj).sort(function(a,b){return b[1]-a[1];});
+}
+</script>
+</body>
+</html>
