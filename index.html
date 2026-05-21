@@ -318,6 +318,18 @@ tbody td.wrap{white-space:normal;max-width:180px}
   border-radius:4px;font-size:.67rem;font-weight:600;
   padding:.12rem .45rem;margin:.1rem .15rem .1rem 0;white-space:nowrap}
 
+/* ─── REFRESH BUTTON ─────────────────────────────── */
+.btn-refresh{display:flex;align-items:center;justify-content:center;
+  width:34px;height:34px;border-radius:50%;border:1px solid var(--border);
+  background:var(--surface);color:var(--txt2);cursor:pointer;font-size:1rem;
+  transition:all var(--tr);flex-shrink:0;box-shadow:var(--sh)}
+.btn-refresh:hover{border-color:var(--primary);color:var(--primary);
+  background:var(--primary-bg);transform:rotate(30deg)}
+.btn-refresh.spinning svg,.btn-refresh.spinning{pointer-events:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn-refresh.spinning{animation:spin .7s linear infinite;color:var(--primary);
+  border-color:var(--primary);background:var(--primary-bg)}
+
 /* ─── PASSWORD TOGGLE ────────────────────────────── */
 .pw-wrap{position:relative}
 .pw-wrap input{padding-right:2.8rem}
@@ -542,6 +554,7 @@ body.is-admin .admin-col{display:table-cell}
       <button class="tb-ham" onclick="toggleSB()">☰</button>
       <div class="tb-title" id="tbT">Dashboard</div>
       <div class="tb-sch"><span style="color:var(--txt3)">⌕</span><input type="text" id="gSch" placeholder="ค้นหา..." oninput="onGS(this.value)"></div>
+      <button class="btn-refresh" id="btnRefresh" onclick="doRefresh()" title="ซิงค์ข้อมูลใหม่">↻</button>
       <div id="roleBadge" class="role-badge rb-viewer">👁 Viewer</div>
     </header>
 
@@ -878,7 +891,7 @@ var PW_ADMIN  = 'W2ICT.2026A';   // Admin  — ดูและแก้ไขข
 // ── กำหนด URL ของ Apps Script Web App ──────────────
 // ใส่ URL ที่ได้จากการ Deploy ตรงนี้ (ใช้เมื่อรันบน GitHub Pages)
 // ตัวอย่าง: 'https://script.google.com/macros/s/AKfycb.../exec'
-var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwfdNBZ4kD2dNnUYyvk1p0XqFG45uayNV_2qDD5jKiAHXIohbuOhAuDkzhm56YJ7x9i/exec';
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzHfXhoEgfU5avxW1WiBmo6gu_eEBgLHC81DmmocSA59GVwKzl0XBPafYoD_v-LBaM/exec';
 
 var DCOLS = [
   {i:11,n:'ความดันโลหิตสูง'},{i:12,n:'เบาหวาน'},{i:13,n:'ไขมันในเลือดสูง'},
@@ -1053,6 +1066,9 @@ function onLoad(r){
 
   populateFilters();
   renderAll();
+  // Refresh button: stop spinner after load
+  var btn = q('btnRefresh');
+  if(btn){ btn.classList.remove('spinning'); btn.disabled=false; }
 }
 
 // helper: find housing column index by partial column name
@@ -1783,6 +1799,13 @@ function apiCall(params, onOK, onFail){
 ──────────────────────────────────────────────────── */
 function reloadData(){
   showToast('🔄 กำลังโหลดข้อมูลใหม่...');
+  loadData();
+}
+
+function doRefresh(){
+  var btn = q('btnRefresh');
+  if(btn){ btn.classList.add('spinning'); btn.disabled=true; }
+  showToast('🔄 กำลังซิงค์ข้อมูล...');
   loadData();
 }
 
