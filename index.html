@@ -756,7 +756,7 @@ var PW_ADMIN  = 'W2ICT.2026A';   // Admin  — ดูและแก้ไขข
 // ── กำหนด URL ของ Apps Script Web App ──────────────
 // ใส่ URL ที่ได้จากการ Deploy ตรงนี้ (ใช้เมื่อรันบน GitHub Pages)
 // ตัวอย่าง: 'https://script.google.com/macros/s/AKfycb.../exec'
-var APPS_SCRIPT_URL = 'PASTE_YOUR_APPS_SCRIPT_URL_HERE';
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwqtMEcBsLwGVXj2DX83y4l7sfsbkMRcXKFpne9-y04OcAWiAMtYmv5PLmkPh56-Y8/exec';
 
 var DCOLS = [
   {i:11,n:'ความดันโลหิตสูง'},{i:12,n:'เบาหวาน'},{i:13,n:'ไขมันในเลือดสูง'},
@@ -861,7 +861,7 @@ function loadData(){
   }
 
   // ─ โหมด GitHub Pages / ภายนอก Apps Script ──────────
-  if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbwqtMEcBsLwGVXj2DX83y4l7sfsbkMRcXKFpne9-y04OcAWiAMtYmv5PLmkPh56-Y8/exec'){
+  if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'PASTE_YOUR_APPS_SCRIPT_URL_HERE'){
     onErr('⚙️ กรุณาแก้ไข APPS_SCRIPT_URL ใน index.html\n\nเปิดไฟล์ index.html แล้วหาบรรทัด:\nvar APPS_SCRIPT_URL = \'PASTE_YOUR_APPS_SCRIPT_URL_HERE\';\nแล้วใส่ URL จาก Apps Script Web App ของคุณ');
     return;
   }
