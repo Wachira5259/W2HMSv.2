@@ -891,7 +891,7 @@ var PW_ADMIN  = 'W2ICT.2026A';   // Admin  — ดูและแก้ไขข
 // ── กำหนด URL ของ Apps Script Web App ──────────────
 // ใส่ URL ที่ได้จากการ Deploy ตรงนี้ (ใช้เมื่อรันบน GitHub Pages)
 // ตัวอย่าง: 'https://script.google.com/macros/s/AKfycb.../exec'
-var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxWFmclH95rpQjjvjcDv_ecVd-aH_Jn3W36g1a_CYRI5V1fdPHklWOAEM0O7XuwMbOF/exec';
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzMPxrAifuN34JRbI99oIz2PVeyhDUMZXk3t_JfrKWC7LfvelzjF1fBDoxdFA0VwUcQ/exec';
 
 var DCOLS = [
   {i:11,n:'ความดันโลหิตสูง'},{i:12,n:'เบาหวาน'},{i:13,n:'ไขมันในเลือดสูง'},
@@ -1464,7 +1464,7 @@ function renderVeh(){
 function renderDis(){
   var rows=S.filt.dis,pp=S.pp.dis,pg=S.pg.dis;
   // Table แสดงเฉพาะคนที่มีโรค — สถิติ Dashboard นับทั้งหมดตามปกติ
-  var withDis=rows.filter(function(r){return parseInt(r[35])>0;});
+  var withDis=rows.filter(function(r){return DCOLS.some(function(d){return chk(r[d.i]);});});
   var s=(pg-1)*pp,slice=withDis.slice(s,s+pp);
   q('cntDis').textContent=rows.length+' รายการ (มีโรค '+withDis.length+' คน)';
   var h='';
@@ -1474,7 +1474,7 @@ function renderDis(){
     var rel=str(r[5]);
     var rb=rel.includes('เจ้าของ')?'<span class="bdg b-blue">เจ้าของ</span>':
            rel?'<span class="bdg b-gray">'+esc(rel)+'</span>':'—';
-    var tot=parseInt(r[35])||0;
+    var tot=DCOLS.filter(function(d){return chk(r[d.i]);}).length;
     var tb='<span class="bdg '+(tot>=3?'b-red':tot>=2?'b-orange':'b-green')+'">'+tot+'</span>';
     // สร้างรายชื่อโรคจาก checkmark
     var diseaseList=DCOLS.filter(function(d){return chk(r[d.i]);}).map(function(d){return d.n;});
@@ -1825,7 +1825,7 @@ function showToast(msg){
 /* ────────────────────────────────────────────────────
    EDIT / ADD MODAL (Admin only)
 ──────────────────────────────────────────────────── */
-var SHMAP = {off:0, veh:1, dis:2, hou:3};
+var SHMAP = {off:0, veh:2, dis:3, hou:1};
 
 function openAdd(type){
   if(S.role!=='admin') return;
