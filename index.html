@@ -56,11 +56,29 @@ html,body{height:100%;font-family:'Sarabun','Segoe UI',sans-serif;
 
 /* ─── LOADER ─────────────────────────────────────── */
 #gL{position:fixed;inset:0;background:var(--sb-bg);display:flex;flex-direction:column;
-  align-items:center;justify-content:center;z-index:9999;transition:opacity .4s}
-#gL p{color:rgba(255,255,255,.7);font-size:.95rem;margin:.75rem 0 1.5rem}
-.spin{width:36px;height:36px;border:3px solid rgba(255,255,255,.15);
+  align-items:center;justify-content:center;z-index:9999;transition:opacity .5s}
+#gL .gl-icon{font-size:3rem;margin-bottom:.5rem;animation:glFloat 2s ease-in-out infinite}
+@keyframes glFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+#gL .gl-title{color:#fff;font-size:1.1rem;font-weight:700;margin:.4rem 0 .2rem;letter-spacing:.03em}
+#gL .gl-sub{color:rgba(255,255,255,.5);font-size:.78rem;margin-bottom:1.4rem}
+#gL .gl-step{color:rgba(255,255,255,.7);font-size:.82rem;margin-bottom:.75rem;
+  min-height:1.2em;transition:opacity .3s}
+.gl-bar-w{width:220px;height:4px;background:rgba(255,255,255,.12);
+  border-radius:4px;overflow:hidden;margin-bottom:1.2rem}
+.gl-bar-f{height:100%;background:var(--primary);border-radius:4px;
+  width:0%;transition:width .4s ease;animation:glPulse 1.5s ease-in-out infinite}
+@keyframes glPulse{0%,100%{opacity:1}50%{opacity:.6}}
+.spin{width:28px;height:28px;border:2.5px solid rgba(255,255,255,.15);
   border-top-color:var(--primary);border-radius:50%;animation:sp .75s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
+
+/* ─── SYNC BAR (top progress bar during refresh) ── */
+#syncBar{position:fixed;top:0;left:0;height:3px;width:0%;z-index:10000;
+  background:linear-gradient(90deg,#3b82f6,#60a5fa,#3b82f6);
+  background-size:200% 100%;
+  transition:width .3s ease,opacity .4s;opacity:0;
+  animation:syncShimmer 1.2s linear infinite}
+@keyframes syncShimmer{to{background-position:-200% 0}}
 
 /* ─── LOGIN ──────────────────────────────────────── */
 #loginSc{display:none;position:fixed;inset:0;
@@ -466,10 +484,16 @@ body.is-admin .admin-col{display:table-cell}
 </head>
 <body>
 
+<!-- SYNC BAR -->
+<div id="syncBar"></div>
+
 <!-- LOADER -->
 <div id="gL">
-  <div style="font-size:2.5rem">🪖</div>
-  <p>กำลังโหลดระบบ...</p>
+  <div class="gl-icon">🪖</div>
+  <div class="gl-title">ระบบฐานข้อมูลข้าราชการ บน.2</div>
+  <div class="gl-sub">กองบิน 2 · W2ICT</div>
+  <div class="gl-step" id="glStep">กำลังเชื่อมต่อ Google Sheets...</div>
+  <div class="gl-bar-w"><div class="gl-bar-f" id="glBar"></div></div>
   <div class="spin"></div>
 </div>
 
@@ -826,6 +850,7 @@ body.is-admin .admin-col{display:table-cell}
         <div class="sec-hd">
           <div class="sec-t">🏠 รายการห้องพัก</div>
           <div class="sec-acts">
+            <button class="btn-add" onclick="openAdd('hou')">➕ เพิ่มห้องพัก</button>
             <span class="cnt-badge" id="cntHou">0 ห้อง</span>
           </div>
         </div>
@@ -841,8 +866,9 @@ body.is-admin .admin-col{display:table-cell}
                 <th onclick="sHou('name')">ชื่อ-สกุล <span class="si">↕</span></th>
                 <th>หน่วยหลัก</th>
                 <th>สถานะ</th>
+                <th class="admin-col" style="text-align:center">จัดการ</th>
               </tr></thead>
-              <tbody id="tbHou"><tr><td colspan="8" class="empty"><span class="ei">⏳</span>กำลังโหลด...</td></tr></tbody>
+              <tbody id="tbHou"><tr><td colspan="9" class="empty"><span class="ei">⏳</span>กำลังโหลด...</td></tr></tbody>
             </table>
           </div>
           <div class="pg" id="pgHou"></div>
@@ -891,7 +917,7 @@ var PW_ADMIN  = 'W2ICT.2026A';   // Admin  — ดูและแก้ไขข
 // ── กำหนด URL ของ Apps Script Web App ──────────────
 // ใส่ URL ที่ได้จากการ Deploy ตรงนี้ (ใช้เมื่อรันบน GitHub Pages)
 // ตัวอย่าง: 'https://script.google.com/macros/s/AKfycb.../exec'
-var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQ2WBNa84E1vb2APIj_92eLTFnKgqV1cKzXg-E7O7NWws9nxezFUvz0aB5dzZFmWlu/exec';
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzoMDrcHuJRhMj3WizLOsHX8bspA2kkmX5HCBDKFpDaRZYn-5Y5zZqK40QjYgTgDU6-/exec';
 
 var DCOLS = [
   {i:11,n:'ความดันโลหิตสูง'},{i:12,n:'เบาหวาน'},{i:13,n:'ไขมันในเลือดสูง'},
@@ -1003,18 +1029,23 @@ function loadData(){
     onErr('⚙️ กรุณาแก้ไข APPS_SCRIPT_URL ใน index.html\n\nเปิดไฟล์ index.html แล้วหาบรรทัด:\nvar APPS_SCRIPT_URL = \'PASTE_YOUR_APPS_SCRIPT_URL_HERE\';\nแล้วใส่ URL จาก Apps Script Web App ของคุณ');
     return;
   }
-  q('gL').style.display='flex'; // แสดง loader ระหว่างดึงข้อมูล
+  q('gL').style.display='flex'; q('gL').style.opacity='1';
+  startLoadSteps();
   fetch(APPS_SCRIPT_URL + '?action=getData', {redirect:'follow'})
     .then(function(res){
       if(!res.ok) throw new Error('HTTP ' + res.status);
       return res.json();
     })
     .then(function(data){
-      q('gL').style.opacity='0';
-      setTimeout(function(){q('gL').style.display='none';},300);
-      onLoad(data);
+      stopLoadSteps();
+      stopSyncBar();
+      setTimeout(function(){
+        q('gL').style.opacity='0';
+        setTimeout(function(){q('gL').style.display='none';},400);
+        onLoad(data);
+      },400);
     })
-    .catch(function(err){ onErr('ดึงข้อมูลไม่ได้: ' + err); });
+    .catch(function(err){ stopSyncBar(); onErr('ดึงข้อมูลไม่ได้: ' + err); });
 }
 function onLoad(r){
   if(!r||!r.success){onErr(r?r.error:'error');return;}
@@ -1069,6 +1100,7 @@ function onLoad(r){
   // Refresh button: stop spinner after load
   var btn = q('btnRefresh');
   if(btn){ btn.classList.remove('spinning'); btn.disabled=false; }
+  stopSyncBar();
 }
 
 // helper: find housing column index by partial column name
@@ -1699,9 +1731,10 @@ function renderHou(){
   q('cntHou').textContent=rows.length+' ห้อง';
   var h='';
   if(!slice.length){
-    h='<tr><td colspan="8" class="empty"><span class="ei">🔍</span>ไม่พบข้อมูล</td></tr>';
+    h='<tr><td colspan="9" class="empty"><span class="ei">🔍</span>ไม่พบข้อมูล</td></tr>';
   } else {
     slice.forEach(function(row,i){
+      var rawIdx = S.raw.hou.indexOf(row);
       var zone  = hv(row,'zone')  || '—';
       var block = hv(row,'block') || '—';
       var room  = hv(row,'room')  || '—';
@@ -1735,6 +1768,10 @@ function renderHou(){
         '<td>'+nameCell+'</td>'+
         '<td class="wrap" style="font-size:.78rem">'+esc(unit)+'</td>'+
         '<td>'+statusBdg+'</td>'+
+        '<td class="admin-col" style="text-align:center;white-space:nowrap">'+
+          '<button class="edit-btn" onclick="openEdit(\'hou\','+rawIdx+')" title="แก้ไข">✏️</button>'+
+          '<button class="del-btn"  onclick="openDelete(\'hou\','+rawIdx+')" title="ลบ">🗑️</button>'+
+        '</td>'+
         '</tr>';
     });
   }
@@ -1806,7 +1843,65 @@ function doRefresh(){
   var btn = q('btnRefresh');
   if(btn){ btn.classList.add('spinning'); btn.disabled=true; }
   showToast('🔄 กำลังซิงค์ข้อมูล...');
+  startSyncBar();
   loadData();
+}
+
+/* ────────────────────────────────────────────────────
+   LOADING STEPS & SYNC BAR
+──────────────────────────────────────────────────── */
+var _loadSteps = [
+  'กำลังเชื่อมต่อ Google Sheets...',
+  'กำลังโหลดข้อมูลข้าราชการ...',
+  'กำลังโหลดข้อมูลยานพาหนะ...',
+  'กำลังโหลดข้อมูลโรคประจำตัว...',
+  'กำลังโหลดข้อมูลบ้านพัก...',
+  'กำลังประมวลผลข้อมูล...'
+];
+var _loadTimer=null, _loadStep=0;
+
+function startLoadSteps(){
+  _loadStep=0;
+  var bar=q('glBar'), stepEl=q('glStep');
+  if(bar) bar.style.width='0%';
+  if(stepEl) stepEl.textContent=_loadSteps[0];
+  clearInterval(_loadTimer);
+  _loadTimer=setInterval(function(){
+    _loadStep=Math.min(_loadStep+1, _loadSteps.length-1);
+    var pct=Math.round((_loadStep/(_loadSteps.length-1))*85);
+    if(bar) bar.style.width=pct+'%';
+    if(stepEl){ stepEl.style.opacity='0'; setTimeout(function(){ stepEl.textContent=_loadSteps[_loadStep]; stepEl.style.opacity='1'; },150); }
+  }, 700);
+}
+
+function stopLoadSteps(){
+  clearInterval(_loadTimer);
+  var bar=q('glBar'), stepEl=q('glStep');
+  if(bar) bar.style.width='100%';
+  if(stepEl) stepEl.textContent='โหลดข้อมูลสำเร็จ ✅';
+}
+
+var _syncTimer=null;
+function startSyncBar(){
+  var bar=q('syncBar');
+  if(!bar) return;
+  clearTimeout(_syncTimer);
+  bar.style.transition='none'; bar.style.width='0%'; bar.style.opacity='1';
+  setTimeout(function(){
+    bar.style.transition='width 2s ease';
+    bar.style.width='80%';
+  }, 30);
+}
+function stopSyncBar(){
+  var bar=q('syncBar');
+  if(!bar) return;
+  bar.style.transition='width .2s ease';
+  bar.style.width='100%';
+  _syncTimer=setTimeout(function(){
+    bar.style.transition='opacity .4s';
+    bar.style.opacity='0';
+    setTimeout(function(){ bar.style.width='0%'; },450);
+  },300);
 }
 
 function showToast(msg){
@@ -1847,6 +1942,9 @@ function openAdd(type){
     body=fld('ยศ','e_rank','')+fldFull('ชื่อ-นามสกุล','e_name','')+
       fldFull('สังกัด','e_unit','')+fld('ประเภทรถ','e_vtype','รถยนต์')+
       fld('ทะเบียน','e_plate','')+fld('จังหวัด','e_prov','');
+  } else if(type==='hou'){
+    title='➕ เพิ่มห้องพัก';
+    body=houFormBody(null);
   }
   q('modalTitle').innerHTML=title;
   q('modalBody').innerHTML=body;
@@ -1869,6 +1967,9 @@ function openEdit(type, idx){
     body=fld('ยศ','e_rank',r[0])+fldFull('ชื่อ-นามสกุล','e_name',r[1])+
       fldFull('สังกัด','e_unit',r[2])+fld('ประเภทรถ','e_vtype',r[3])+
       fld('ทะเบียน','e_plate',r[4])+fld('จังหวัด','e_prov',r[6]||r[5]);
+  } else if(type==='hou'){
+    title='✏️ แก้ไขห้องพัก — เขต '+esc(hv(r,'zone'))+' แถว '+esc(hv(r,'block'))+' ห้อง '+esc(hv(r,'room'));
+    body=houFormBody(r);
   } else {
     title='✏️ แก้ไขโรคประจำตัว';
     body='<div class="modal-note full">📋 คอลัมน์โรคมีความซับซ้อน กรุณาแก้ไขตัวโรคโดยตรงใน Google Sheet<br>แก้ได้เฉพาะข้อมูลทั่วไปด้านล่างนี้</div>'+
@@ -1880,6 +1981,29 @@ function openEdit(type, idx){
   q('modalBody').innerHTML=body;
   q('btnSave').textContent='💾 บันทึก';
   q('editModal').classList.add('on');
+}
+
+// สร้าง form fields สำหรับ housing — dynamic ตาม S.houCol
+function houFormBody(row){
+  var cols = Object.keys(S.houCol);
+  if(!cols.length){
+    return '<div class="modal-note full">⚠️ ไม่พบข้อมูลคอลัมน์ กรุณาโหลดข้อมูลก่อน</div>';
+  }
+  // Priority keys first
+  var priority=['เขต','แปลงเลข','ห้อง','ชื่อ'];
+  var ordered=[], rest=[];
+  cols.forEach(function(c){
+    var isPri=priority.some(function(p){return c.indexOf(p)>=0;});
+    if(isPri) ordered.push(c); else rest.push(c);
+  });
+  ordered=ordered.concat(rest);
+  return ordered.map(function(colName){
+    var ci = S.houCol[colName];
+    var val = row ? str(row[ci]) : '';
+    var id = 'eh_'+ci;
+    return '<div class="mf-g full"><div class="mf-lbl">'+colName+'</div>'+
+      '<input class="mf-inp" id="'+id+'" value="'+esc(val)+'" type="text"></div>';
+  }).join('');
 }
 
 function fld(lbl,id,val){
@@ -1915,6 +2039,15 @@ function saveEdit(){
     r[3]=q('e_vtype').value; r[4]=q('e_plate').value;
     r[5]=q('e_prov').value; r[6]=q('e_prov').value;
     values=r;
+  } else if(type==='hou'){
+    var r = mode==='edit' ? S.raw.hou[idx].slice() : new Array(Object.keys(S.houCol).length||20).fill('');
+    // เขียนค่าจาก input กลับตาม column index map
+    Object.keys(S.houCol).forEach(function(colName){
+      var inputId = 'eh_'+S.houCol[colName];
+      var el = q(inputId);
+      if(el) r[S.houCol[colName]] = el.value;
+    });
+    values=r;
   } else {
     var r = S.raw.dis[idx].slice();
     r[6]=q('e_rank2').value; r[7]=q('e_fname2').value;
@@ -1929,7 +2062,7 @@ function saveEdit(){
   } else {
     S.raw[type].push(values);
   }
-  if(type==='off')applyOF(); else if(type==='veh')applyVF(); else applyDF();
+  if(type==='off')applyOF(); else if(type==='veh')applyVF(); else if(type==='hou')applyHF(); else applyDF();
   q('editModal').classList.remove('on');
   S.edit={type:null,idx:null,mode:null};
 
@@ -1953,6 +2086,7 @@ function openDelete(type, idx){
   var r=S.raw[type][idx];
   var name = type==='off' ? esc(r[1])+' '+esc(r[2])+' '+esc(r[3])
            : type==='veh' ? 'ทะเบียน '+esc(r[4])+' ('+esc(r[1])+')'
+           : type==='hou' ? 'เขต '+esc(hv(r,'zone'))+' แถว '+esc(hv(r,'block'))+' ห้อง '+esc(hv(r,'room'))
            : esc(r[2])+' — '+esc(r[5]);
   q('delSub').innerHTML='<strong>'+name+'</strong><br>จะถูกลบออกจาก Google Sheet ถาวร';
   q('delModal').classList.add('on');
@@ -1967,7 +2101,7 @@ function confirmDelete(){
   if(!type||idx===null) return;
   // Remove from local state
   S.raw[type].splice(idx,1);
-  if(type==='off')applyOF(); else if(type==='veh')applyVF(); else applyDF();
+  if(type==='off')applyOF(); else if(type==='veh')applyVF(); else if(type==='hou')applyHF(); else applyDF();
   q('delModal').classList.remove('on');
   S.edit={type:null,idx:null,mode:null};
   // Delete on server
