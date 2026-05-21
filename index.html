@@ -891,7 +891,7 @@ var PW_ADMIN  = 'W2ICT.2026A';   // Admin  — ดูและแก้ไขข
 // ── กำหนด URL ของ Apps Script Web App ──────────────
 // ใส่ URL ที่ได้จากการ Deploy ตรงนี้ (ใช้เมื่อรันบน GitHub Pages)
 // ตัวอย่าง: 'https://script.google.com/macros/s/AKfycb.../exec'
-var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzMPxrAifuN34JRbI99oIz2PVeyhDUMZXk3t_JfrKWC7LfvelzjF1fBDoxdFA0VwUcQ/exec';
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQ2WBNa84E1vb2APIj_92eLTFnKgqV1cKzXg-E7O7NWws9nxezFUvz0aB5dzZFmWlu/exec';
 
 var DCOLS = [
   {i:11,n:'ความดันโลหิตสูง'},{i:12,n:'เบาหวาน'},{i:13,n:'ไขมันในเลือดสูง'},
@@ -1773,9 +1773,9 @@ function apiCall(params, onOK, onFail){
       })
       .withFailureHandler(onFail);
     var a = params.action;
-    if(a==='updateRow') run.updateRow(params.sheetIndex, params.rowIndex, params.values);
-    else if(a==='addRow')    run.addRow(params.sheetIndex, params.values);
-    else if(a==='deleteRow') run.deleteRow(params.sheetIndex, params.rowIndex);
+    if(a==='updateRow') run.updateRow(params.sheetName, params.rowIndex, params.values);
+    else if(a==='addRow')    run.addRow(params.sheetName, params.values);
+    else if(a==='deleteRow') run.deleteRow(params.sheetName, params.rowIndex);
     return;
   }
 
@@ -1825,7 +1825,12 @@ function showToast(msg){
 /* ────────────────────────────────────────────────────
    EDIT / ADD MODAL (Admin only)
 ──────────────────────────────────────────────────── */
-var SHMAP = {off:0, veh:2, dis:3, hou:1};
+var SHMAP = {
+  off: 'รายชื่อข้าราชการ บน.2',
+  veh: 'ข้อมูลยานพาหนะ',
+  dis: 'โรคประจำตัว',
+  hou: 'ข้อมูลบ้านพัก'
+};
 
 function openAdd(type){
   if(S.role!=='admin') return;
@@ -1929,10 +1934,10 @@ function saveEdit(){
   S.edit={type:null,idx:null,mode:null};
 
   // Write to Google Sheet
-  var shIdx=SHMAP[type];
+  var shName=SHMAP[type];
   var params = mode==='edit'
-    ? {action:'updateRow', sheetIndex:shIdx, rowIndex:idx, values:values}
-    : {action:'addRow',    sheetIndex:shIdx, values:values};
+    ? {action:'updateRow', sheetName:shName, rowIndex:idx, values:values}
+    : {action:'addRow',    sheetName:shName, values:values};
   apiCall(params,
     function(){ showToast('✅ บันทึกสำเร็จ'); reloadData(); },
     function(e){ showToast('⚠️ บันทึกไม่สำเร็จ: '+e); }
@@ -1966,7 +1971,7 @@ function confirmDelete(){
   q('delModal').classList.remove('on');
   S.edit={type:null,idx:null,mode:null};
   // Delete on server
-  apiCall({action:'deleteRow', sheetIndex:SHMAP[type], rowIndex:idx},
+  apiCall({action:'deleteRow', sheetName:SHMAP[type], rowIndex:idx},
     function(){ showToast('🗑️ ลบสำเร็จ'); reloadData(); },
     function(e){ showToast('⚠️ ลบไม่สำเร็จ: '+e); }
   );
