@@ -318,6 +318,80 @@ tbody td.wrap{white-space:normal;max-width:180px}
   border-radius:4px;font-size:.67rem;font-weight:600;
   padding:.12rem .45rem;margin:.1rem .15rem .1rem 0;white-space:nowrap}
 
+/* ─── ROLE BUTTONS (Login) ───────────────────────── */
+.role-label{color:rgba(255,255,255,.5);font-size:.75rem;margin-bottom:.55rem;
+  text-align:left;letter-spacing:.02em}
+.role-btns{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-bottom:1.25rem}
+.btn-role{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.15);
+  border-radius:10px;padding:.8rem .5rem .65rem;cursor:pointer;transition:all .2s;
+  text-align:center;color:#fff;display:flex;flex-direction:column;align-items:center;gap:.2rem;
+  width:100%}
+.btn-role:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);
+  transform:translateY(-1px)}
+.btn-role.sel{background:rgba(59,130,246,.25);border-color:#60a5fa;
+  box-shadow:0 0 0 3px rgba(59,130,246,.2)}
+.btn-role.sel-admin{background:rgba(234,88,12,.18);border-color:#fb923c;
+  box-shadow:0 0 0 3px rgba(234,88,12,.18)}
+.btn-role .r-ico{font-size:1.45rem;line-height:1}
+.btn-role .r-name{font-size:.9rem;font-weight:700;margin-top:.1rem}
+.btn-role .r-desc{font-size:.65rem;color:rgba(255,255,255,.45);margin-top:.05rem}
+.btn-role.sel .r-desc,.btn-role.sel-admin .r-desc{color:rgba(255,255,255,.75)}
+
+/* ─── ROLE BADGE (Topbar) ────────────────────────── */
+.role-badge{display:inline-flex;align-items:center;gap:.3rem;padding:.28rem .7rem;
+  border-radius:99px;font-size:.73rem;font-weight:700;flex-shrink:0}
+.rb-viewer{background:var(--primary-bg);color:var(--primary2)}
+.rb-admin{background:var(--orange-bg);color:var(--orange);
+  box-shadow:0 0 0 1.5px rgba(234,88,12,.2)}
+
+/* ─── EDIT MODAL ─────────────────────────────────── */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);
+  z-index:6000;align-items:center;justify-content:center;padding:1rem;
+  backdrop-filter:blur(2px)}
+.modal-ov.on{display:flex}
+.modal-card{background:var(--surface);border-radius:var(--r2);width:100%;max-width:540px;
+  max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.3);
+  animation:mIn .18s ease}
+@keyframes mIn{from{transform:scale(.95);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-hd{display:flex;align-items:center;justify-content:space-between;
+  padding:.9rem 1.2rem;border-bottom:1px solid var(--border);
+  position:sticky;top:0;background:var(--surface);z-index:1}
+.modal-t{font-size:.95rem;font-weight:800;color:var(--txt);display:flex;align-items:center;gap:.4rem}
+.modal-cls{background:none;border:none;cursor:pointer;color:var(--txt3);font-size:1rem;
+  width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+  border-radius:50%;transition:background var(--tr)}
+.modal-cls:hover{background:var(--bg);color:var(--txt)}
+.modal-body{padding:1rem 1.2rem;display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+.modal-ft{display:flex;gap:.5rem;justify-content:flex-end;
+  padding:.8rem 1.2rem;border-top:1px solid var(--border);
+  position:sticky;bottom:0;background:var(--surface)}
+.mf-g{display:flex;flex-direction:column;gap:.3rem}
+.mf-g.full{grid-column:1/-1}
+.mf-lbl{font-size:.68rem;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.05em}
+.mf-inp{padding:.48rem .75rem;border:1px solid var(--border);border-radius:var(--r);
+  background:var(--bg);color:var(--txt);font-size:.85rem;outline:none;
+  transition:border-color var(--tr);font-family:inherit;width:100%}
+.mf-inp:focus{border-color:var(--primary);background:var(--surface)}
+.btn-cancel{padding:.48rem 1rem;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);color:var(--txt2);font-size:.82rem;cursor:pointer;transition:all var(--tr)}
+.btn-cancel:hover{border-color:var(--primary);color:var(--primary)}
+.btn-save{padding:.48rem 1.2rem;background:var(--primary);border:none;
+  border-radius:var(--r);color:#fff;font-size:.82rem;font-weight:700;cursor:pointer;
+  transition:background var(--tr);box-shadow:0 2px 8px rgba(59,130,246,.3)}
+.btn-save:hover{background:var(--primary2)}
+.modal-note{grid-column:1/-1;background:var(--orange-bg);border:1px solid rgba(234,88,12,.2);
+  border-radius:var(--r);padding:.55rem .8rem;font-size:.75rem;color:var(--orange);
+  line-height:1.4}
+
+/* ─── ADMIN COLUMN ───────────────────────────────── */
+.admin-col{display:none}
+body.is-admin .admin-col{display:table-cell}
+.edit-btn{background:none;border:1px solid var(--border);border-radius:5px;
+  cursor:pointer;padding:.18rem .45rem;font-size:.75rem;color:var(--txt2);
+  transition:all var(--tr);line-height:1}
+.edit-btn:hover{border-color:var(--primary);color:var(--primary);
+  background:var(--primary-bg)}
+
 /* ─── RESPONSIVE ─────────────────────────────────── */
 @media(max-width:900px){
   .sb{position:fixed;left:0;top:0;height:100%;z-index:100;
@@ -355,6 +429,21 @@ tbody td.wrap{white-space:normal;max-width:180px}
     <div class="ico">🏛️</div>
     <h2>ระบบฐานข้อมูลข้าราชการ</h2>
     <div class="sub">กองบิน 2 · กองทัพอากาศ</div>
+
+    <div class="role-label">เลือกบทบาทการเข้าใช้งาน</div>
+    <div class="role-btns">
+      <button class="btn-role" id="btnViewer" onclick="selRole('viewer')">
+        <div class="r-ico">👁</div>
+        <div class="r-name">Viewer</div>
+        <div class="r-desc">ดูข้อมูลอย่างเดียว</div>
+      </button>
+      <button class="btn-role" id="btnAdmin" onclick="selRole('admin')">
+        <div class="r-ico">🔧</div>
+        <div class="r-name">Admin</div>
+        <div class="r-desc">ดูและแก้ไขข้อมูล</div>
+      </button>
+    </div>
+
     <label>รหัสผ่าน</label>
     <input type="password" id="pwIn" placeholder="กรอกรหัสผ่านเพื่อเข้าสู่ระบบ" autocomplete="current-password">
     <button class="btn-login" onclick="doLogin()">เข้าสู่ระบบ</button>
@@ -409,7 +498,7 @@ tbody td.wrap{white-space:normal;max-width:180px}
       <button class="tb-ham" onclick="toggleSB()">☰</button>
       <div class="tb-title" id="tbT">Dashboard</div>
       <div class="tb-sch"><span style="color:var(--txt3)">⌕</span><input type="text" id="gSch" placeholder="ค้นหา..." oninput="onGS(this.value)"></div>
-      <div class="tb-av">W</div>
+      <div id="roleBadge" class="role-badge rb-viewer">👁 Viewer</div>
     </header>
 
     <div class="mc">
@@ -501,6 +590,7 @@ tbody td.wrap{white-space:normal;max-width:180px}
                 <th onclick="sT('off',18)">อาคาร <span class="si">↕</span></th>
                 <th onclick="sT('off',19)">ห้อง <span class="si">↕</span></th>
                 <th>อีเมล</th>
+                <th class="admin-col" style="text-align:center">แก้ไข</th>
               </tr></thead>
               <tbody id="tbOff"><tr><td colspan="11" class="empty"><span class="ei">⏳</span>กำลังโหลด...</td></tr></tbody>
             </table>
@@ -563,6 +653,7 @@ tbody td.wrap{white-space:normal;max-width:180px}
                 <th onclick="sT('veh',3)">ประเภท <span class="si">↕</span></th>
                 <th onclick="sT('veh',4)">ทะเบียน <span class="si">↕</span></th>
                 <th onclick="sT('veh',6)">จังหวัด <span class="si">↕</span></th>
+                <th class="admin-col" style="text-align:center">แก้ไข</th>
               </tr></thead>
               <tbody id="tbVeh"><tr><td colspan="7" class="empty"><span class="ei">⏳</span>กำลังโหลด...</td></tr></tbody>
             </table>
@@ -627,6 +718,7 @@ tbody td.wrap{white-space:normal;max-width:180px}
                 <th onclick="sT('dis',9)">อายุ <span class="si">↕</span></th>
                 <th onclick="sT('dis',35)">รวม <span class="si">↕</span></th>
                 <th>โรคที่มี</th>
+                <th class="admin-col" style="text-align:center">แก้ไข</th>
               </tr></thead>
               <tbody id="tbDis"><tr><td colspan="15" class="empty"><span class="ei">⏳</span>กำลังโหลด...</td></tr></tbody>
             </table>
@@ -639,16 +731,32 @@ tbody td.wrap{white-space:normal;max-width:180px}
   </div><!-- /ca -->
 </div><!-- /app -->
 
+<!-- EDIT MODAL (Admin only) -->
+<div id="editModal" class="modal-ov" onclick="closeEdit(event)">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-hd">
+      <div class="modal-t" id="modalTitle">✏️ แก้ไขข้อมูล</div>
+      <button class="modal-cls" onclick="closeEdit()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-ft">
+      <button class="btn-cancel" onclick="closeEdit()">ยกเลิก</button>
+      <button class="btn-save" onclick="saveEdit()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ────────────────────────────────────────────────────
    CONSTANTS & STATE
 ──────────────────────────────────────────────────── */
-var PW = 'W2ICT.2026';
+var PW_VIEWER = 'W2ICT.2026V';   // Viewer — ดูข้อมูลอย่างเดียว
+var PW_ADMIN  = 'W2ICT.2026A';   // Admin  — ดูและแก้ไขข้อมูลได้
 
 // ── กำหนด URL ของ Apps Script Web App ──────────────
 // ใส่ URL ที่ได้จากการ Deploy ตรงนี้ (ใช้เมื่อรันบน GitHub Pages)
 // ตัวอย่าง: 'https://script.google.com/macros/s/AKfycb.../exec'
-var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwi8vqeCUg0PvPGGy9HDBtpwkGQmUiA4WIxwHexWMggNws2K89w4oSvNUdrU1qzd5ju/exec';
+var APPS_SCRIPT_URL = 'PASTE_YOUR_APPS_SCRIPT_URL_HERE';
 
 var DCOLS = [
   {i:11,n:'ความดันโลหิตสูง'},{i:12,n:'เบาหวาน'},{i:13,n:'ไขมันในเลือดสูง'},
@@ -665,7 +773,9 @@ var S = {
   raw:{off:[],veh:[],dis:[]}, filt:{off:[],veh:[],dis:[]},
   sort:{off:{c:-1,d:1},veh:{c:-1,d:1},dis:{c:-1,d:1}},
   pg:{off:1,veh:1,dis:1}, pp:{off:25,veh:25,dis:25},
-  cur:'dash', ch:{}, col:false
+  cur:'dash', ch:{}, col:false,
+  role:null,               // 'viewer' | 'admin'
+  edit:{type:null,idx:null} // current edit context
 };
 
 var PT = {dash:'📊 Dashboard',off:'👨‍✈️ ข้อมูลข้าราชการ',veh:'🚗 ข้อมูลยานพาหนะ',dis:'🏥 ข้อมูลโรคประจำตัว'};
@@ -685,20 +795,54 @@ window.addEventListener('load',function(){
 /* ────────────────────────────────────────────────────
    AUTH
 ──────────────────────────────────────────────────── */
+function selRole(role){
+  S.role = role;
+  q('btnViewer').classList.remove('sel','sel-admin');
+  q('btnAdmin').classList.remove('sel','sel-admin');
+  if(role === 'viewer') q('btnViewer').classList.add('sel');
+  else                  q('btnAdmin').classList.add('sel-admin');
+  q('lerr').textContent = '';
+  q('pwIn').focus();
+}
+
 function doLogin(){
-  if(q('pwIn').value===PW){
+  var pw = q('pwIn').value;
+  if(!S.role){
+    q('lerr').textContent = 'กรุณาเลือกบทบาทก่อน (Viewer หรือ Admin)';
+    return;
+  }
+  var ok = (S.role === 'viewer' && pw === PW_VIEWER) ||
+           (S.role === 'admin'  && pw === PW_ADMIN);
+  if(ok){
     q('loginSc').classList.remove('on');
     q('app').classList.add('on');
+    // Set role on body for CSS admin-col toggle
+    if(S.role === 'admin') document.body.classList.add('is-admin');
+    else                   document.body.classList.remove('is-admin');
+    // Update role badge
+    var badge = q('roleBadge');
+    if(S.role === 'admin'){
+      badge.className = 'role-badge rb-admin';
+      badge.textContent = '🔧 Admin';
+    } else {
+      badge.className = 'role-badge rb-viewer';
+      badge.textContent = '👁 Viewer';
+    }
     loadData();
   } else {
-    q('lerr').textContent='รหัสผ่านไม่ถูกต้อง';
-    q('pwIn').value=''; q('pwIn').focus();
+    q('lerr').textContent = 'รหัสผ่านไม่ถูกต้อง';
+    q('pwIn').value = ''; q('pwIn').focus();
   }
 }
+
 function doLogout(){
   q('app').classList.remove('on');
   q('loginSc').classList.add('on');
-  q('pwIn').value=''; q('lerr').textContent='';
+  q('pwIn').value = ''; q('lerr').textContent = '';
+  S.role = null;
+  document.body.classList.remove('is-admin');
+  q('btnViewer').classList.remove('sel','sel-admin');
+  q('btnAdmin').classList.remove('sel','sel-admin');
 }
 
 /* ────────────────────────────────────────────────────
@@ -717,7 +861,7 @@ function loadData(){
   }
 
   // ─ โหมด GitHub Pages / ภายนอก Apps Script ──────────
-  if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'PASTE_YOUR_APPS_SCRIPT_URL_HERE'){
+  if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbwqtMEcBsLwGVXj2DX83y4l7sfsbkMRcXKFpne9-y04OcAWiAMtYmv5PLmkPh56-Y8/exec'){
     onErr('⚙️ กรุณาแก้ไข APPS_SCRIPT_URL ใน index.html\n\nเปิดไฟล์ index.html แล้วหาบรรทัด:\nvar APPS_SCRIPT_URL = \'PASTE_YOUR_APPS_SCRIPT_URL_HERE\';\nแล้วใส่ URL จาก Apps Script Web App ของคุณ');
     return;
   }
@@ -1065,8 +1209,9 @@ function renderOff(){
   var s=(pg-1)*pp, slice=rows.slice(s,s+pp);
   q('cntOff').textContent=rows.length+' คน';
   var h='';
-  if(!slice.length){h='<tr><td colspan="11" class="empty"><span class="ei">🔍</span>ไม่พบข้อมูล</td></tr>';}
+  if(!slice.length){h='<tr><td colspan="12" class="empty"><span class="ei">🔍</span>ไม่พบข้อมูล</td></tr>';}
   else slice.forEach(function(r,i){
+    var rawIdx=S.raw.off.indexOf(r);
     var st=str(r[15]);
     var sb=st==='ปกติ'?'<span class="bdg b-green">ปกติ</span>':st?'<span class="bdg b-gray">'+esc(st)+'</span>':'—';
     var zone=r[17]?'<span class="bdg b-blue">เขต '+esc(r[17])+'</span>':'—';
@@ -1077,7 +1222,10 @@ function renderOff(){
       '<td>'+sb+'</td><td>'+zone+'</td>'+
       '<td style="text-align:center">'+(r[18]||'—')+'</td>'+
       '<td style="text-align:center">'+(r[19]||'—')+'</td>'+
-      '<td style="font-size:.72rem;color:var(--txt2)">'+esc(str(r[14]).replace(/\\_/g,'_'))+'</td></tr>';
+      '<td style="font-size:.72rem;color:var(--txt2)">'+esc(str(r[14]).replace(/\\_/g,'_'))+'</td>'+
+      '<td class="admin-col" style="text-align:center">'+
+        '<button class="edit-btn" onclick="openEdit(\'off\','+rawIdx+')">✏️</button>'+
+      '</td></tr>';
   });
   q('tbOff').innerHTML=h;
   renderPg('off',rows.length,pp,pg);
@@ -1088,8 +1236,9 @@ function renderVeh(){
   var s=(pg-1)*pp,slice=rows.slice(s,s+pp);
   q('cntVeh').textContent=rows.length+' คัน';
   var h='';
-  if(!slice.length){h='<tr><td colspan="7" class="empty"><span class="ei">🔍</span>ไม่พบข้อมูล</td></tr>';}
+  if(!slice.length){h='<tr><td colspan="8" class="empty"><span class="ei">🔍</span>ไม่พบข้อมูล</td></tr>';}
   else slice.forEach(function(r,i){
+    var rawIdx=S.raw.veh.indexOf(r);
     var t=str(r[3]);
     var tb=t==='รถยนต์'?'<span class="bdg b-blue">🚗 รถยนต์</span>':
            t.includes('จักรยาน')?'<span class="bdg b-orange">🏍 รถจักรยานยนต์</span>':
@@ -1099,7 +1248,10 @@ function renderVeh(){
       '<td class="fw7">'+esc(r[1])+'</td><td>'+esc(r[2])+'</td>'+
       '<td>'+tb+'</td>'+
       '<td><span class="fw7 mono">'+esc(r[4])+'</span></td>'+
-      '<td>'+esc(r[6]||r[5]||'—')+'</td></tr>';
+      '<td>'+esc(r[6]||r[5]||'—')+'</td>'+
+      '<td class="admin-col" style="text-align:center">'+
+        '<button class="edit-btn" onclick="openEdit(\'veh\','+rawIdx+')">✏️</button>'+
+      '</td></tr>';
   });
   q('tbVeh').innerHTML=h;
   renderPg('veh',rows.length,pp,pg);
@@ -1112,8 +1264,9 @@ function renderDis(){
   var s=(pg-1)*pp,slice=withDis.slice(s,s+pp);
   q('cntDis').textContent=rows.length+' รายการ (มีโรค '+withDis.length+' คน)';
   var h='';
-  if(!slice.length){h='<tr><td colspan="8" class="empty"><span class="ei">🔍</span>ไม่พบข้อมูลผู้มีโรคประจำตัว</td></tr>';}
+  if(!slice.length){h='<tr><td colspan="9" class="empty"><span class="ei">🔍</span>ไม่พบข้อมูลผู้มีโรคประจำตัว</td></tr>';}
   else slice.forEach(function(r,i){
+    var rawIdx=S.raw.dis.indexOf(r);
     var rel=str(r[5]);
     var rb=rel.includes('เจ้าของ')?'<span class="bdg b-blue">เจ้าของ</span>':
            rel?'<span class="bdg b-gray">'+esc(rel)+'</span>':'—';
@@ -1131,7 +1284,10 @@ function renderDis(){
       '<td>'+rb+'</td>'+
       '<td style="text-align:center">'+(r[9]||'—')+'</td>'+
       '<td style="text-align:center">'+tb+'</td>'+
-      '<td class="wrap" style="min-width:200px">'+dlHtml+'</td></tr>';
+      '<td class="wrap" style="min-width:200px">'+dlHtml+'</td>'+
+      '<td class="admin-col" style="text-align:center">'+
+        '<button class="edit-btn" onclick="openEdit(\'dis\','+rawIdx+')">✏️</button>'+
+      '</td></tr>';
   });
   q('tbDis').innerHTML=h;
   renderPg('dis',withDis.length,pp,pg);
@@ -1246,6 +1402,135 @@ function orgCat(u){
 }
 function sortObj(obj){
   return Object.entries(obj).sort(function(a,b){return b[1]-a[1];});
+}
+
+/* ────────────────────────────────────────────────────
+   EDIT MODAL (Admin only)
+──────────────────────────────────────────────────── */
+function openEdit(type, idx){
+  if(S.role !== 'admin') return;
+  S.edit = {type:type, idx:idx};
+  var r = S.raw[type][idx];
+  var body = '';
+  var title = '';
+
+  // ── Note ถ้าอยู่บน GitHub Pages ────────────────────
+  var isGHP = !(typeof google !== 'undefined' && google.script && google.script.run);
+  var note = isGHP
+    ? '<div class="modal-note">⚠️ โหมด GitHub Pages: การบันทึกจะอัปเดตข้อมูลในหน้านี้ชั่วคราว<br>หากต้องการแก้ไขถาวร ให้แก้ไขโดยตรงใน Google Sheet</div>'
+    : '';
+
+  if(type === 'off'){
+    title = '✏️ แก้ไขข้าราชการ — '+esc(r[2])+' '+esc(r[3]);
+    body = note+
+      fld('ยศ','e_rank',r[1])+
+      fld('ชื่อ','e_fname',r[2])+
+      fld('นามสกุล','e_lname',r[3])+
+      fldFull('หน่วยหลัก','e_unit',r[5])+
+      fldFull('ตำแหน่ง','e_pos',r[11])+
+      fld('อีเมล','e_email',r[14])+
+      fld('สถานภาพ','e_status',r[15])+
+      fld('เขต','e_zone',r[17])+
+      fld('อาคาร','e_bldg',r[18])+
+      fld('ห้อง','e_room',r[19]);
+  } else if(type === 'veh'){
+    title = '✏️ แก้ไขยานพาหนะ — ทะเบียน '+esc(r[4]);
+    body = note+
+      fld('ยศ','e_rank',r[0])+
+      fldFull('ชื่อ-นามสกุล','e_name',r[1])+
+      fldFull('สังกัด','e_unit',r[2])+
+      fld('ประเภทรถ','e_vtype',r[3])+
+      fld('ทะเบียน','e_plate',r[4])+
+      fld('จังหวัด','e_prov',r[6]||r[5]);
+  } else {
+    // diseases — ซับซ้อน ให้ link ไป Google Sheet แทน
+    title = '✏️ แก้ไขข้อมูลโรคประจำตัว';
+    body = '<div class="modal-note full" style="grid-column:1/-1">'+
+      '📋 ข้อมูลโรคประจำตัวมีหลายคอลัมน์และมีความซับซ้อน<br>'+
+      'กรุณาแก้ไขโดยตรงใน <strong>Google Sheet</strong> แล้วรีโหลดหน้าเว็บเพื่อดูข้อมูลล่าสุด'+
+      '</div>'+
+      fld('ชื่อเจ้าของ','e_owner',r[2])+
+      fld('สังกัด','e_unit',r[4])+
+      fld('ความสัมพันธ์','e_rel',r[5])+
+      fld('อายุ','e_age',r[9]);
+  }
+
+  q('modalTitle').innerHTML = title;
+  q('modalBody').innerHTML = body;
+  q('editModal').classList.add('on');
+}
+
+function fld(lbl, id, val){
+  return '<div class="mf-g">'+
+    '<div class="mf-lbl">'+lbl+'</div>'+
+    '<input class="mf-inp" id="'+id+'" value="'+esc(val||'')+'" type="text">'+
+    '</div>';
+}
+function fldFull(lbl, id, val){
+  return '<div class="mf-g full">'+
+    '<div class="mf-lbl">'+lbl+'</div>'+
+    '<input class="mf-inp" id="'+id+'" value="'+esc(val||'')+'" type="text">'+
+    '</div>';
+}
+
+function closeEdit(e){
+  if(e && e.target !== q('editModal')) return;
+  q('editModal').classList.remove('on');
+  S.edit = {type:null, idx:null};
+}
+
+function saveEdit(){
+  var type = S.edit.type, idx = S.edit.idx;
+  if(!type || idx === null) return;
+  var r = S.raw[type][idx].slice(); // clone
+
+  if(type === 'off'){
+    r[1]  = q('e_rank').value;
+    r[2]  = q('e_fname').value;
+    r[3]  = q('e_lname').value;
+    r[5]  = q('e_unit').value;
+    r[11] = q('e_pos').value;
+    r[14] = q('e_email').value;
+    r[15] = q('e_status').value;
+    r[17] = q('e_zone').value;
+    r[18] = q('e_bldg').value;
+    r[19] = q('e_room').value;
+  } else if(type === 'veh'){
+    r[0] = q('e_rank').value;
+    r[1] = q('e_name').value;
+    r[2] = q('e_unit').value;
+    r[3] = q('e_vtype').value;
+    r[4] = q('e_plate').value;
+    r[6] = q('e_prov').value;
+    r[5] = q('e_prov').value;
+  } else {
+    r[2] = q('e_owner').value;
+    r[4] = q('e_unit').value;
+    r[5] = q('e_rel').value;
+    r[9] = q('e_age').value;
+  }
+
+  // Update local state
+  S.raw[type][idx] = r;
+  // Re-apply filter to refresh
+  if(type==='off'){applyOF();}
+  else if(type==='veh'){applyVF();}
+  else{applyDF();}
+
+  // Try to write back to Google Sheet (Apps Script mode only)
+  var sheetMap = {off:0, veh:1, dis:2};
+  if(typeof google !== 'undefined' && google.script && google.script.run){
+    google.script.run
+      .withSuccessHandler(function(res){
+        if(res && res.success) console.log('บันทึกสำเร็จ');
+        else console.warn('บันทึกไม่สำเร็จ:', res ? res.error : 'unknown');
+      })
+      .withFailureHandler(function(err){console.warn('updateRow error:', err);})
+      .updateRow(sheetMap[type], idx, r);
+  }
+
+  q('editModal').classList.remove('on');
+  S.edit = {type:null, idx:null};
 }
 </script>
 </body>
