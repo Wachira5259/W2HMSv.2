@@ -318,6 +318,44 @@ tbody td.wrap{white-space:normal;max-width:180px}
   border-radius:4px;font-size:.67rem;font-weight:600;
   padding:.12rem .45rem;margin:.1rem .15rem .1rem 0;white-space:nowrap}
 
+/* ─── PASSWORD TOGGLE ────────────────────────────── */
+.pw-wrap{position:relative}
+.pw-wrap input{padding-right:2.8rem}
+.pw-tog{position:absolute;right:.55rem;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;color:rgba(255,255,255,.4);
+  font-size:1rem;padding:.2rem;line-height:1;transition:color .2s}
+.pw-tog:hover{color:rgba(255,255,255,.9)}
+
+/* ─── ADD BUTTON (Admin) ─────────────────────────── */
+.btn-add{display:none;align-items:center;gap:.3rem;padding:.38rem .85rem;
+  background:var(--primary);border:none;border-radius:var(--r);
+  color:#fff;font-size:.8rem;font-weight:600;cursor:pointer;
+  box-shadow:0 2px 8px rgba(59,130,246,.3);transition:background var(--tr);white-space:nowrap}
+.btn-add:hover{background:var(--primary2)}
+body.is-admin .btn-add{display:inline-flex}
+
+/* ─── DELETE BUTTON ──────────────────────────────── */
+.del-btn{background:none;border:1px solid rgba(220,38,38,.25);border-radius:5px;
+  cursor:pointer;padding:.18rem .42rem;font-size:.75rem;color:var(--red);
+  transition:all var(--tr);line-height:1;margin-left:.25rem}
+.del-btn:hover{background:var(--red-bg);border-color:var(--red)}
+
+/* ─── DELETE CONFIRM MODAL ───────────────────────── */
+.del-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);
+  z-index:7000;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.del-ov.on{display:flex}
+.del-card{background:var(--surface);border-radius:var(--r2);padding:1.75rem 1.5rem;
+  width:100%;max-width:340px;text-align:center;
+  box-shadow:0 20px 50px rgba(0,0,0,.25);animation:mIn .15s ease}
+.del-ico{font-size:2.2rem;margin-bottom:.5rem}
+.del-msg{font-size:.9rem;font-weight:700;color:var(--txt);margin-bottom:.25rem}
+.del-sub{font-size:.78rem;color:var(--txt2);margin-bottom:1.25rem}
+.del-acts{display:flex;gap:.6rem;justify-content:center}
+.btn-del-cf{padding:.5rem 1.25rem;background:var(--red);border:none;
+  border-radius:var(--r);color:#fff;font-size:.83rem;font-weight:700;
+  cursor:pointer;transition:background var(--tr)}
+.btn-del-cf:hover{background:#b91c1c}
+
 /* ─── ROLE BUTTONS (Login) ───────────────────────── */
 .role-label{color:rgba(255,255,255,.5);font-size:.75rem;margin-bottom:.55rem;
   text-align:left;letter-spacing:.02em}
@@ -445,7 +483,10 @@ body.is-admin .admin-col{display:table-cell}
     </div>
 
     <label>รหัสผ่าน</label>
-    <input type="password" id="pwIn" placeholder="กรอกรหัสผ่านเพื่อเข้าสู่ระบบ" autocomplete="current-password">
+    <div class="pw-wrap">
+      <input type="password" id="pwIn" placeholder="กรอกรหัสผ่านเพื่อเข้าสู่ระบบ" autocomplete="current-password">
+      <button class="pw-tog" type="button" id="pwTog" onclick="togglePw()" title="แสดง/ซ่อนรหัสผ่าน">👁</button>
+    </div>
     <button class="btn-login" onclick="doLogin()">เข้าสู่ระบบ</button>
     <div class="lerr" id="lerr"></div>
     <div class="lver">ฐานข้อมูลบ้านพัก Rev 2.0 · พ.ศ. 2569</div>
@@ -571,6 +612,7 @@ body.is-admin .admin-col{display:table-cell}
         <div class="sec-hd">
           <div class="sec-t">👨‍✈️ รายชื่อข้าราชการ</div>
           <div class="sec-acts">
+            <button class="btn-add" onclick="openAdd('off')">➕ เพิ่มข้าราชการ</button>
             <div class="sbox"><span style="color:var(--txt3)">⌕</span><input type="text" id="srchOff" placeholder="ค้นหา..." oninput="filterOff()"></div>
             <span class="cnt-badge" id="cntOff">0 คน</span>
           </div>
@@ -590,7 +632,7 @@ body.is-admin .admin-col{display:table-cell}
                 <th onclick="sT('off',18)">อาคาร <span class="si">↕</span></th>
                 <th onclick="sT('off',19)">ห้อง <span class="si">↕</span></th>
                 <th>อีเมล</th>
-                <th class="admin-col" style="text-align:center">แก้ไข</th>
+                <th class="admin-col" style="text-align:center">จัดการ</th>
               </tr></thead>
               <tbody id="tbOff"><tr><td colspan="11" class="empty"><span class="ei">⏳</span>กำลังโหลด...</td></tr></tbody>
             </table>
@@ -638,6 +680,7 @@ body.is-admin .admin-col{display:table-cell}
         <div class="sec-hd">
           <div class="sec-t">🚗 รายการยานพาหนะ</div>
           <div class="sec-acts">
+            <button class="btn-add" onclick="openAdd('veh')">➕ เพิ่มยานพาหนะ</button>
             <div class="sbox"><span style="color:var(--txt3)">⌕</span><input type="text" id="srchVeh" placeholder="ค้นหา..." oninput="filterVeh()"></div>
             <span class="cnt-badge" id="cntVeh">0 คัน</span>
           </div>
@@ -653,7 +696,7 @@ body.is-admin .admin-col{display:table-cell}
                 <th onclick="sT('veh',3)">ประเภท <span class="si">↕</span></th>
                 <th onclick="sT('veh',4)">ทะเบียน <span class="si">↕</span></th>
                 <th onclick="sT('veh',6)">จังหวัด <span class="si">↕</span></th>
-                <th class="admin-col" style="text-align:center">แก้ไข</th>
+                <th class="admin-col" style="text-align:center">จัดการ</th>
               </tr></thead>
               <tbody id="tbVeh"><tr><td colspan="7" class="empty"><span class="ei">⏳</span>กำลังโหลด...</td></tr></tbody>
             </table>
@@ -711,14 +754,14 @@ body.is-admin .admin-col{display:table-cell}
             <table>
               <thead><tr>
                 <th>#</th>
-                <th onclick="sT('dis',1)">ยศ <span class="si">↕</span></th>
-                <th onclick="sT('dis',2)">ชื่อ เจ้าของ <span class="si">↕</span></th>
+                <th onclick="sT('dis',6)">ยศ <span class="si">↕</span></th>
+                <th onclick="sT('dis',7)">ชื่อ-สกุล <span class="si">↕</span></th>
                 <th onclick="sT('dis',4)">สังกัด <span class="si">↕</span></th>
                 <th onclick="sT('dis',5)">ความสัมพันธ์ <span class="si">↕</span></th>
                 <th onclick="sT('dis',9)">อายุ <span class="si">↕</span></th>
                 <th onclick="sT('dis',35)">รวม <span class="si">↕</span></th>
                 <th>โรคที่มี</th>
-                <th class="admin-col" style="text-align:center">แก้ไข</th>
+                <th class="admin-col" style="text-align:center">จัดการ</th>
               </tr></thead>
               <tbody id="tbDis"><tr><td colspan="15" class="empty"><span class="ei">⏳</span>กำลังโหลด...</td></tr></tbody>
             </table>
@@ -731,7 +774,7 @@ body.is-admin .admin-col{display:table-cell}
   </div><!-- /ca -->
 </div><!-- /app -->
 
-<!-- EDIT MODAL (Admin only) -->
+<!-- EDIT / ADD MODAL (Admin only) -->
 <div id="editModal" class="modal-ov" onclick="closeEdit(event)">
   <div class="modal-card" onclick="event.stopPropagation()">
     <div class="modal-hd">
@@ -741,7 +784,20 @@ body.is-admin .admin-col{display:table-cell}
     <div class="modal-body" id="modalBody"></div>
     <div class="modal-ft">
       <button class="btn-cancel" onclick="closeEdit()">ยกเลิก</button>
-      <button class="btn-save" onclick="saveEdit()">💾 บันทึก</button>
+      <button class="btn-save" id="btnSave" onclick="saveEdit()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM MODAL -->
+<div id="delModal" class="del-ov" onclick="closeDelete(event)">
+  <div class="del-card" onclick="event.stopPropagation()">
+    <div class="del-ico">🗑️</div>
+    <div class="del-msg">ยืนยันการลบ?</div>
+    <div class="del-sub" id="delSub">รายการนี้จะถูกลบออกจาก Google Sheet ถาวร</div>
+    <div class="del-acts">
+      <button class="btn-cancel" onclick="closeDelete()">ยกเลิก</button>
+      <button class="btn-del-cf" onclick="confirmDelete()">🗑️ ลบ</button>
     </div>
   </div>
 </div>
@@ -756,7 +812,7 @@ var PW_ADMIN  = 'W2ICT.2026A';   // Admin  — ดูและแก้ไขข
 // ── กำหนด URL ของ Apps Script Web App ──────────────
 // ใส่ URL ที่ได้จากการ Deploy ตรงนี้ (ใช้เมื่อรันบน GitHub Pages)
 // ตัวอย่าง: 'https://script.google.com/macros/s/AKfycb.../exec'
-var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwqtMEcBsLwGVXj2DX83y4l7sfsbkMRcXKFpne9-y04OcAWiAMtYmv5PLmkPh56-Y8/exec';
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQh1nDvVwrMg36JcaJHzxI8gxj9szBn5PexBq1MyZUyc_8kJX9ZhYuPjF4neIZMWoA/exec';
 
 var DCOLS = [
   {i:11,n:'ความดันโลหิตสูง'},{i:12,n:'เบาหวาน'},{i:13,n:'ไขมันในเลือดสูง'},
@@ -1223,8 +1279,9 @@ function renderOff(){
       '<td style="text-align:center">'+(r[18]||'—')+'</td>'+
       '<td style="text-align:center">'+(r[19]||'—')+'</td>'+
       '<td style="font-size:.72rem;color:var(--txt2)">'+esc(str(r[14]).replace(/\\_/g,'_'))+'</td>'+
-      '<td class="admin-col" style="text-align:center">'+
-        '<button class="edit-btn" onclick="openEdit(\'off\','+rawIdx+')">✏️</button>'+
+      '<td class="admin-col" style="text-align:center;white-space:nowrap">'+
+        '<button class="edit-btn" onclick="openEdit(\'off\','+rawIdx+')" title="แก้ไข">✏️</button>'+
+        '<button class="del-btn"  onclick="openDelete(\'off\','+rawIdx+')" title="ลบ">🗑️</button>'+
       '</td></tr>';
   });
   q('tbOff').innerHTML=h;
@@ -1249,8 +1306,9 @@ function renderVeh(){
       '<td>'+tb+'</td>'+
       '<td><span class="fw7 mono">'+esc(r[4])+'</span></td>'+
       '<td>'+esc(r[6]||r[5]||'—')+'</td>'+
-      '<td class="admin-col" style="text-align:center">'+
-        '<button class="edit-btn" onclick="openEdit(\'veh\','+rawIdx+')">✏️</button>'+
+      '<td class="admin-col" style="text-align:center;white-space:nowrap">'+
+        '<button class="edit-btn" onclick="openEdit(\'veh\','+rawIdx+')" title="แก้ไข">✏️</button>'+
+        '<button class="del-btn"  onclick="openDelete(\'veh\','+rawIdx+')" title="ลบ">🗑️</button>'+
       '</td></tr>';
   });
   q('tbVeh').innerHTML=h;
@@ -1278,15 +1336,16 @@ function renderDis(){
       ? diseaseList.map(function(n){return'<span class="dis-tag">'+esc(n)+'</span>';}).join('')
       : '<span class="mu">—</span>';
     h+='<tr><td class="mu">'+(s+i+1)+'</td>'+
-      '<td><span class="bdg b-purple">'+esc(r[1]||r[6])+'</span></td>'+
-      '<td class="fw7">'+esc(r[2])+'</td>'+
+      '<td><span class="bdg b-purple">'+esc(r[6]||r[1])+'</span></td>'+
+      '<td class="fw7">'+esc(r[7])+' '+esc(r[8])+'</td>'+
       '<td>'+esc(r[4])+'</td>'+
       '<td>'+rb+'</td>'+
       '<td style="text-align:center">'+(r[9]||'—')+'</td>'+
       '<td style="text-align:center">'+tb+'</td>'+
       '<td class="wrap" style="min-width:200px">'+dlHtml+'</td>'+
-      '<td class="admin-col" style="text-align:center">'+
-        '<button class="edit-btn" onclick="openEdit(\'dis\','+rawIdx+')">✏️</button>'+
+      '<td class="admin-col" style="text-align:center;white-space:nowrap">'+
+        '<button class="edit-btn" onclick="openEdit(\'dis\','+rawIdx+')" title="แก้ไข">✏️</button>'+
+        '<button class="del-btn"  onclick="openDelete(\'dis\','+rawIdx+')" title="ลบ">🗑️</button>'+
       '</td></tr>';
   });
   q('tbDis').innerHTML=h;
@@ -1405,132 +1464,222 @@ function sortObj(obj){
 }
 
 /* ────────────────────────────────────────────────────
-   EDIT MODAL (Admin only)
+   PASSWORD TOGGLE
 ──────────────────────────────────────────────────── */
-function openEdit(type, idx){
-  if(S.role !== 'admin') return;
-  S.edit = {type:type, idx:idx};
-  var r = S.raw[type][idx];
-  var body = '';
-  var title = '';
+function togglePw(){
+  var inp=q('pwIn'), tog=q('pwTog');
+  if(inp.type==='password'){inp.type='text'; tog.textContent='🙈';}
+  else{inp.type='password'; tog.textContent='👁';}
+}
 
-  // ── Note ถ้าอยู่บน GitHub Pages ────────────────────
-  var isGHP = !(typeof google !== 'undefined' && google.script && google.script.run);
-  var note = isGHP
-    ? '<div class="modal-note">⚠️ โหมด GitHub Pages: การบันทึกจะอัปเดตข้อมูลในหน้านี้ชั่วคราว<br>หากต้องการแก้ไขถาวร ให้แก้ไขโดยตรงใน Google Sheet</div>'
-    : '';
+/* ────────────────────────────────────────────────────
+   API CALL — รองรับทั้ง 2 โหมด
+   โหมด Apps Script embedded : ใช้ google.script.run
+   โหมด GitHub Pages         : ใช้ fetch GET params
+──────────────────────────────────────────────────── */
+function apiCall(params, onOK, onFail){
+  onOK   = onOK   || function(){};
+  onFail = onFail || function(e){ alert('⚠️ เกิดข้อผิดพลาด: '+e); };
 
-  if(type === 'off'){
-    title = '✏️ แก้ไขข้าราชการ — '+esc(r[2])+' '+esc(r[3]);
-    body = note+
-      fld('ยศ','e_rank',r[1])+
-      fld('ชื่อ','e_fname',r[2])+
-      fld('นามสกุล','e_lname',r[3])+
-      fldFull('หน่วยหลัก','e_unit',r[5])+
-      fldFull('ตำแหน่ง','e_pos',r[11])+
-      fld('อีเมล','e_email',r[14])+
-      fld('สถานภาพ','e_status',r[15])+
-      fld('เขต','e_zone',r[17])+
-      fld('อาคาร','e_bldg',r[18])+
-      fld('ห้อง','e_room',r[19]);
-  } else if(type === 'veh'){
-    title = '✏️ แก้ไขยานพาหนะ — ทะเบียน '+esc(r[4]);
-    body = note+
-      fld('ยศ','e_rank',r[0])+
-      fldFull('ชื่อ-นามสกุล','e_name',r[1])+
-      fldFull('สังกัด','e_unit',r[2])+
-      fld('ประเภทรถ','e_vtype',r[3])+
-      fld('ทะเบียน','e_plate',r[4])+
-      fld('จังหวัด','e_prov',r[6]||r[5]);
-  } else {
-    // diseases — ซับซ้อน ให้ link ไป Google Sheet แทน
-    title = '✏️ แก้ไขข้อมูลโรคประจำตัว';
-    body = '<div class="modal-note full" style="grid-column:1/-1">'+
-      '📋 ข้อมูลโรคประจำตัวมีหลายคอลัมน์และมีความซับซ้อน<br>'+
-      'กรุณาแก้ไขโดยตรงใน <strong>Google Sheet</strong> แล้วรีโหลดหน้าเว็บเพื่อดูข้อมูลล่าสุด'+
-      '</div>'+
-      fld('ชื่อเจ้าของ','e_owner',r[2])+
-      fld('สังกัด','e_unit',r[4])+
-      fld('ความสัมพันธ์','e_rel',r[5])+
-      fld('อายุ','e_age',r[9]);
+  // ─ Apps Script embedded ─────────────────────────────
+  if(typeof google !== 'undefined' && google.script && google.script.run){
+    var run = google.script.run
+      .withSuccessHandler(function(r){
+        if(r && !r.success) onFail(r.error || 'error');
+        else onOK(r);
+      })
+      .withFailureHandler(onFail);
+    var a = params.action;
+    if(a==='updateRow') run.updateRow(params.sheetIndex, params.rowIndex, params.values);
+    else if(a==='addRow')    run.addRow(params.sheetIndex, params.values);
+    else if(a==='deleteRow') run.deleteRow(params.sheetIndex, params.rowIndex);
+    return;
   }
 
-  q('modalTitle').innerHTML = title;
-  q('modalBody').innerHTML = body;
+  // ─ GitHub Pages mode — GET with query params ─────────
+  var qs = Object.keys(params).map(function(k){
+    var v = params[k];
+    if(typeof v === 'object') v = JSON.stringify(v);
+    return encodeURIComponent(k)+'='+encodeURIComponent(String(v));
+  }).join('&');
+  fetch(APPS_SCRIPT_URL+'?'+qs, {redirect:'follow'})
+    .then(function(r){ return r.json(); })
+    .then(function(r){
+      if(r && !r.success) onFail(r.error || 'error');
+      else onOK(r);
+    })
+    .catch(onFail);
+}
+
+/* ────────────────────────────────────────────────────
+   RELOAD DATA (หลัง write สำเร็จ)
+──────────────────────────────────────────────────── */
+function reloadData(){
+  showToast('🔄 กำลังโหลดข้อมูลใหม่...');
+  loadData();
+}
+
+function showToast(msg){
+  var t = q('toast');
+  if(!t){ t=document.createElement('div'); t.id='toast'; t.style.cssText=
+    'position:fixed;bottom:1.2rem;right:1.2rem;background:#1e293b;color:#fff;'+
+    'padding:.6rem 1rem;border-radius:8px;font-size:.82rem;z-index:9999;'+
+    'box-shadow:0 4px 14px rgba(0,0,0,.25);transition:opacity .3s;';
+    document.body.appendChild(t);
+  }
+  t.textContent=msg; t.style.opacity='1';
+  clearTimeout(t._tid);
+  t._tid=setTimeout(function(){t.style.opacity='0';},3000);
+}
+
+/* ────────────────────────────────────────────────────
+   EDIT / ADD MODAL (Admin only)
+──────────────────────────────────────────────────── */
+var SHMAP = {off:0, veh:1, dis:2};
+
+function openAdd(type){
+  if(S.role!=='admin') return;
+  S.edit = {type:type, idx:null, mode:'add'};
+  var title='', body='';
+  if(type==='off'){
+    title='➕ เพิ่มข้าราชการ';
+    body=fld('ยศ','e_rank','')+fld('ชื่อ','e_fname','')+fld('นามสกุล','e_lname','')+
+      fldFull('หน่วยหลัก','e_unit','')+fldFull('ตำแหน่ง','e_pos','')+
+      fld('อีเมล','e_email','')+fld('สถานภาพ','e_status','ปกติ')+
+      fld('เขต','e_zone','')+fld('อาคาร','e_bldg','')+fld('ห้อง','e_room','');
+  } else if(type==='veh'){
+    title='➕ เพิ่มยานพาหนะ';
+    body=fld('ยศ','e_rank','')+fldFull('ชื่อ-นามสกุล','e_name','')+
+      fldFull('สังกัด','e_unit','')+fld('ประเภทรถ','e_vtype','รถยนต์')+
+      fld('ทะเบียน','e_plate','')+fld('จังหวัด','e_prov','');
+  }
+  q('modalTitle').innerHTML=title;
+  q('modalBody').innerHTML=body;
+  q('btnSave').textContent='➕ เพิ่ม';
   q('editModal').classList.add('on');
 }
 
-function fld(lbl, id, val){
-  return '<div class="mf-g">'+
-    '<div class="mf-lbl">'+lbl+'</div>'+
-    '<input class="mf-inp" id="'+id+'" value="'+esc(val||'')+'" type="text">'+
-    '</div>';
+function openEdit(type, idx){
+  if(S.role!=='admin') return;
+  S.edit = {type:type, idx:idx, mode:'edit'};
+  var r=S.raw[type][idx], title='', body='';
+  if(type==='off'){
+    title='✏️ แก้ไข — '+esc(r[2])+' '+esc(r[3]);
+    body=fld('ยศ','e_rank',r[1])+fld('ชื่อ','e_fname',r[2])+fld('นามสกุล','e_lname',r[3])+
+      fldFull('หน่วยหลัก','e_unit',r[5])+fldFull('ตำแหน่ง','e_pos',r[11])+
+      fld('อีเมล','e_email',r[14])+fld('สถานภาพ','e_status',r[15])+
+      fld('เขต','e_zone',r[17])+fld('อาคาร','e_bldg',r[18])+fld('ห้อง','e_room',r[19]);
+  } else if(type==='veh'){
+    title='✏️ แก้ไข — ทะเบียน '+esc(r[4]);
+    body=fld('ยศ','e_rank',r[0])+fldFull('ชื่อ-นามสกุล','e_name',r[1])+
+      fldFull('สังกัด','e_unit',r[2])+fld('ประเภทรถ','e_vtype',r[3])+
+      fld('ทะเบียน','e_plate',r[4])+fld('จังหวัด','e_prov',r[6]||r[5]);
+  } else {
+    title='✏️ แก้ไขโรคประจำตัว';
+    body='<div class="modal-note full">📋 คอลัมน์โรคมีความซับซ้อน กรุณาแก้ไขตัวโรคโดยตรงใน Google Sheet<br>แก้ได้เฉพาะข้อมูลทั่วไปด้านล่างนี้</div>'+
+      fld('ยศ2 (ยศผู้ป่วย)','e_rank2',r[6])+fld('ชื่อ2','e_fname2',r[7])+
+      fld('นามสกุล2','e_lname2',r[8])+fld('สังกัด','e_unit',r[4])+
+      fld('ความสัมพันธ์','e_rel',r[5])+fld('อายุ','e_age',r[9]);
+  }
+  q('modalTitle').innerHTML=title;
+  q('modalBody').innerHTML=body;
+  q('btnSave').textContent='💾 บันทึก';
+  q('editModal').classList.add('on');
 }
-function fldFull(lbl, id, val){
-  return '<div class="mf-g full">'+
-    '<div class="mf-lbl">'+lbl+'</div>'+
-    '<input class="mf-inp" id="'+id+'" value="'+esc(val||'')+'" type="text">'+
-    '</div>';
+
+function fld(lbl,id,val){
+  return '<div class="mf-g"><div class="mf-lbl">'+lbl+'</div>'+
+    '<input class="mf-inp" id="'+id+'" value="'+esc(val||'')+'" type="text"></div>';
+}
+function fldFull(lbl,id,val){
+  return '<div class="mf-g full"><div class="mf-lbl">'+lbl+'</div>'+
+    '<input class="mf-inp" id="'+id+'" value="'+esc(val||'')+'" type="text"></div>';
 }
 
 function closeEdit(e){
-  if(e && e.target !== q('editModal')) return;
+  if(e && e.target!==q('editModal')) return;
   q('editModal').classList.remove('on');
-  S.edit = {type:null, idx:null};
+  S.edit={type:null,idx:null,mode:null};
 }
 
 function saveEdit(){
-  var type = S.edit.type, idx = S.edit.idx;
-  if(!type || idx === null) return;
-  var r = S.raw[type][idx].slice(); // clone
+  var type=S.edit.type, idx=S.edit.idx, mode=S.edit.mode;
+  if(!type||!mode) return;
 
-  if(type === 'off'){
-    r[1]  = q('e_rank').value;
-    r[2]  = q('e_fname').value;
-    r[3]  = q('e_lname').value;
-    r[5]  = q('e_unit').value;
-    r[11] = q('e_pos').value;
-    r[14] = q('e_email').value;
-    r[15] = q('e_status').value;
-    r[17] = q('e_zone').value;
-    r[18] = q('e_bldg').value;
-    r[19] = q('e_room').value;
-  } else if(type === 'veh'){
-    r[0] = q('e_rank').value;
-    r[1] = q('e_name').value;
-    r[2] = q('e_unit').value;
-    r[3] = q('e_vtype').value;
-    r[4] = q('e_plate').value;
-    r[6] = q('e_prov').value;
-    r[5] = q('e_prov').value;
+  var values;
+  if(type==='off'){
+    var r = mode==='edit' ? S.raw.off[idx].slice() : new Array(25).fill('');
+    r[1]=q('e_rank').value; r[2]=q('e_fname').value; r[3]=q('e_lname').value;
+    r[5]=q('e_unit').value; r[11]=q('e_pos').value; r[14]=q('e_email').value;
+    r[15]=q('e_status').value; r[17]=q('e_zone').value;
+    r[18]=q('e_bldg').value; r[19]=q('e_room').value;
+    values=r;
+  } else if(type==='veh'){
+    var r = mode==='edit' ? S.raw.veh[idx].slice() : new Array(10).fill('');
+    r[0]=q('e_rank').value; r[1]=q('e_name').value; r[2]=q('e_unit').value;
+    r[3]=q('e_vtype').value; r[4]=q('e_plate').value;
+    r[5]=q('e_prov').value; r[6]=q('e_prov').value;
+    values=r;
   } else {
-    r[2] = q('e_owner').value;
-    r[4] = q('e_unit').value;
-    r[5] = q('e_rel').value;
-    r[9] = q('e_age').value;
+    var r = S.raw.dis[idx].slice();
+    r[6]=q('e_rank2').value; r[7]=q('e_fname2').value;
+    r[8]=q('e_lname2').value; r[4]=q('e_unit').value;
+    r[5]=q('e_rel').value; r[9]=q('e_age').value;
+    values=r;
   }
 
-  // Update local state
-  S.raw[type][idx] = r;
-  // Re-apply filter to refresh
-  if(type==='off'){applyOF();}
-  else if(type==='veh'){applyVF();}
-  else{applyDF();}
-
-  // Try to write back to Google Sheet (Apps Script mode only)
-  var sheetMap = {off:0, veh:1, dis:2};
-  if(typeof google !== 'undefined' && google.script && google.script.run){
-    google.script.run
-      .withSuccessHandler(function(res){
-        if(res && res.success) console.log('บันทึกสำเร็จ');
-        else console.warn('บันทึกไม่สำเร็จ:', res ? res.error : 'unknown');
-      })
-      .withFailureHandler(function(err){console.warn('updateRow error:', err);})
-      .updateRow(sheetMap[type], idx, r);
+  // Update local state optimistically
+  if(mode==='edit'){
+    S.raw[type][idx]=values;
+  } else {
+    S.raw[type].push(values);
   }
-
+  if(type==='off')applyOF(); else if(type==='veh')applyVF(); else applyDF();
   q('editModal').classList.remove('on');
-  S.edit = {type:null, idx:null};
+  S.edit={type:null,idx:null,mode:null};
+
+  // Write to Google Sheet
+  var shIdx=SHMAP[type];
+  var params = mode==='edit'
+    ? {action:'updateRow', sheetIndex:shIdx, rowIndex:idx, values:values}
+    : {action:'addRow',    sheetIndex:shIdx, values:values};
+  apiCall(params,
+    function(){ showToast('✅ บันทึกสำเร็จ'); reloadData(); },
+    function(e){ showToast('⚠️ บันทึกไม่สำเร็จ: '+e); }
+  );
+}
+
+/* ────────────────────────────────────────────────────
+   DELETE
+──────────────────────────────────────────────────── */
+function openDelete(type, idx){
+  if(S.role!=='admin') return;
+  S.edit={type:type,idx:idx,mode:'delete'};
+  var r=S.raw[type][idx];
+  var name = type==='off' ? esc(r[1])+' '+esc(r[2])+' '+esc(r[3])
+           : type==='veh' ? 'ทะเบียน '+esc(r[4])+' ('+esc(r[1])+')'
+           : esc(r[2])+' — '+esc(r[5]);
+  q('delSub').innerHTML='<strong>'+name+'</strong><br>จะถูกลบออกจาก Google Sheet ถาวร';
+  q('delModal').classList.add('on');
+}
+function closeDelete(e){
+  if(e && e.target!==q('delModal')) return;
+  q('delModal').classList.remove('on');
+  S.edit={type:null,idx:null,mode:null};
+}
+function confirmDelete(){
+  var type=S.edit.type, idx=S.edit.idx;
+  if(!type||idx===null) return;
+  // Remove from local state
+  S.raw[type].splice(idx,1);
+  if(type==='off')applyOF(); else if(type==='veh')applyVF(); else applyDF();
+  q('delModal').classList.remove('on');
+  S.edit={type:null,idx:null,mode:null};
+  // Delete on server
+  apiCall({action:'deleteRow', sheetIndex:SHMAP[type], rowIndex:idx},
+    function(){ showToast('🗑️ ลบสำเร็จ'); reloadData(); },
+    function(e){ showToast('⚠️ ลบไม่สำเร็จ: '+e); }
+  );
 }
 </script>
 </body>
