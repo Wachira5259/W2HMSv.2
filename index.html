@@ -526,6 +526,9 @@ body.is-admin .admin-col{display:table-cell}
     <div class="ni" id="n-dis" data-tip="โรคประจำตัว" onclick="goPage('dis')">
       <span class="ic">🏥</span><span class="lbl">ข้อมูลโรคประจำตัว</span><span class="bdg" id="bdgDis">—</span>
     </div>
+    <div class="ni" id="n-hou" data-tip="บ้านพัก" onclick="goPage('hou')">
+      <span class="ic">🏠</span><span class="lbl">ข้อมูลบ้านพัก</span><span class="bdg" id="bdgHou">—</span>
+    </div>
 
     <div class="sb-ft">
       <button class="btn-out" onclick="doLogout()"><span class="btxt">🚪 ออกจากระบบ</span><span class="bico" style="display:none">🚪</span></button>
@@ -770,6 +773,69 @@ body.is-admin .admin-col{display:table-cell}
         </div>
       </div>
 
+      <!-- ═══════════════════════════════════════════
+           HOUSING
+      ════════════════════════════════════════════ -->
+      <div class="page" id="page-hou">
+
+        <!-- Filter bar -->
+        <div class="fbar">
+          <select class="fsel" id="fHZ" onchange="applyHF()"><option value="">🏘️ ทุกเขต</option></select>
+          <select class="fsel" id="fHB" onchange="applyHF()"><option value="">🏢 ทุกแถว</option></select>
+          <input  class="fsel" id="fHR" placeholder="🔢 ห้อง..." oninput="applyHF()" style="width:90px">
+          <input  class="fsel" id="fHN" placeholder="🔍 ค้นหาชื่อ..." oninput="applyHF()" style="width:140px">
+          <button class="btn-rst" onclick="resetHF()">↺ รีเซ็ต</button>
+        </div>
+
+        <!-- Stat cards -->
+        <div class="sgrid">
+          <div class="sc">  <div class="sc-ico">🏠</div><div><div class="sc-v" id="hTot">—</div><div class="sc-l">ห้องทั้งหมด</div></div></div>
+          <div class="sc g"><div class="sc-ico">✅</div><div><div class="sc-v" id="hOcc">—</div><div class="sc-l">มีผู้พักอาศัย</div></div></div>
+          <div class="sc o"><div class="sc-ico">🚪</div><div><div class="sc-v" id="hVac">—</div><div class="sc-l">ห้องว่าง/ไม่มีข้อมูล</div></div></div>
+          <div class="sc p"><div class="sc-ico">📊</div><div><div class="sc-v" id="hPct">—%</div><div class="sc-l">อัตราการเข้าพัก</div></div></div>
+        </div>
+
+        <!-- Zone chart + Building label list -->
+        <div class="pgrid" style="grid-template-columns:1fr 1fr">
+          <div class="panel">
+            <div class="panel-t">🏘️ ห้องแต่ละเขต — มีผู้พัก vs ว่าง</div>
+            <div class="ch-wrap tall"><canvas id="cHZone"></canvas></div>
+          </div>
+          <div class="panel">
+            <div class="panel-t">🏢 จำนวนห้องแต่ละแถว</div>
+            <div class="ll" id="llHBldg"></div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Table section -->
+        <div class="sec-hd">
+          <div class="sec-t">🏠 รายการห้องพัก</div>
+          <div class="sec-acts">
+            <span class="cnt-badge" id="cntHou">0 ห้อง</span>
+          </div>
+        </div>
+        <div class="tw">
+          <div class="ts">
+            <table>
+              <thead><tr>
+                <th>#</th>
+                <th onclick="sHou('zone')">เขต <span class="si">↕</span></th>
+                <th onclick="sHou('block')">แถว <span class="si">↕</span></th>
+                <th onclick="sHou('room')">ห้อง <span class="si">↕</span></th>
+                <th>ยศ</th>
+                <th onclick="sHou('name')">ชื่อ-สกุล <span class="si">↕</span></th>
+                <th>หน่วยหลัก</th>
+                <th>สถานะ</th>
+              </tr></thead>
+              <tbody id="tbHou"><tr><td colspan="8" class="empty"><span class="ei">⏳</span>กำลังโหลด...</td></tr></tbody>
+            </table>
+          </div>
+          <div class="pg" id="pgHou"></div>
+        </div>
+      </div>
+
     </div><!-- /mc -->
   </div><!-- /ca -->
 </div><!-- /app -->
@@ -812,7 +878,7 @@ var PW_ADMIN  = 'W2ICT.2026A';   // Admin  — ดูและแก้ไขข
 // ── กำหนด URL ของ Apps Script Web App ──────────────
 // ใส่ URL ที่ได้จากการ Deploy ตรงนี้ (ใช้เมื่อรันบน GitHub Pages)
 // ตัวอย่าง: 'https://script.google.com/macros/s/AKfycb.../exec'
-var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQh1nDvVwrMg36JcaJHzxI8gxj9szBn5PexBq1MyZUyc_8kJX9ZhYuPjF4neIZMWoA/exec';
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwfdNBZ4kD2dNnUYyvk1p0XqFG45uayNV_2qDD5jKiAHXIohbuOhAuDkzhm56YJ7x9i/exec';
 
 var DCOLS = [
   {i:11,n:'ความดันโลหิตสูง'},{i:12,n:'เบาหวาน'},{i:13,n:'ไขมันในเลือดสูง'},
@@ -826,15 +892,18 @@ var DCOLS = [
 ];
 
 var S = {
-  raw:{off:[],veh:[],dis:[]}, filt:{off:[],veh:[],dis:[]},
-  sort:{off:{c:-1,d:1},veh:{c:-1,d:1},dis:{c:-1,d:1}},
-  pg:{off:1,veh:1,dis:1}, pp:{off:25,veh:25,dis:25},
+  raw:{off:[],veh:[],dis:[],hou:[]}, filt:{off:[],veh:[],dis:[],hou:[]},
+  sort:{off:{c:-1,d:1},veh:{c:-1,d:1},dis:{c:-1,d:1},hou:{c:-1,d:1}},
+  pg:{off:1,veh:1,dis:1,hou:1}, pp:{off:25,veh:25,dis:25,hou:25},
   cur:'dash', ch:{}, col:false,
-  role:null,               // 'viewer' | 'admin'
-  edit:{type:null,idx:null} // current edit context
+  role:null,
+  edit:{type:null,idx:null,mode:null},
+  houCol:{},   // housing column name → index map
+  hCI:{},      // housing key column indices {zone, block, room, name}
+  offMap:{}    // officials fullname → {rank, unit}
 };
 
-var PT = {dash:'📊 Dashboard',off:'👨‍✈️ ข้อมูลข้าราชการ',veh:'🚗 ข้อมูลยานพาหนะ',dis:'🏥 ข้อมูลโรคประจำตัว'};
+var PT = {dash:'📊 Dashboard',off:'👨‍✈️ ข้อมูลข้าราชการ',veh:'🚗 ข้อมูลยานพาหนะ',dis:'🏥 ข้อมูลโรคประจำตัว',hou:'🏠 ข้อมูลบ้านพัก'};
 
 /* ────────────────────────────────────────────────────
    INIT
@@ -947,13 +1016,63 @@ function onLoad(r){
   S.filt.veh=S.raw.veh.slice();
   S.filt.dis=S.raw.dis.slice();
 
+  // ── Housing sheet ────────────────────────────────
+  var houRaw = r.housing || [];
+  // parse header row → column index map
+  S.houCol = {};
+  if(houRaw.length > 0){
+    houRaw[0].forEach(function(h,i){ if(str(h)) S.houCol[str(h).trim()] = i; });
+  }
+  // store key column indices (fuzzy match by keyword)
+  S.hCI = {
+    zone:  hcFind('เขต'),
+    block: hcFind('แปลงเลข'),
+    room:  hcFind('ห้อง'),
+    name:  hcFind('ชื่อ')
+  };
+  S.raw.hou = houRaw.length > 1 ? houRaw.slice(1).filter(function(row){
+    return row.some(function(v){return v!==''&&v!==null&&v!==undefined;});
+  }) : [];
+  S.filt.hou = S.raw.hou.slice();
+
+  // ── Officials lookup map (for housing cross-reference) ──
+  S.offMap = {};
+  S.raw.off.forEach(function(row){
+    var fn = str(row[2]).trim(), ln = str(row[3]).trim();
+    var full = (fn+' '+ln).trim();
+    var info = {rank:str(row[1]), unit:str(row[5])};
+    if(full) S.offMap[full] = info;
+    if(fn)   S.offMap[fn]   = S.offMap[fn] || info; // fallback by first name
+  });
+
   q('bdgOff').textContent=S.raw.off.length;
   q('bdgVeh').textContent=S.raw.veh.length;
   q('bdgDis').textContent=S.raw.dis.length;
+  q('bdgHou').textContent=S.raw.hou.length;
   if(r.lastUpdated) q('updTxt').innerHTML='อัปเดต '+r.lastUpdated;
 
   populateFilters();
   renderAll();
+}
+
+// helper: find housing column index by partial column name
+function hcFind(keyword){
+  if(S.houCol[keyword]!==undefined) return S.houCol[keyword];
+  var keys=Object.keys(S.houCol);
+  for(var k=0;k<keys.length;k++){
+    if(keys[k].indexOf(keyword)>=0) return S.houCol[keys[k]];
+  }
+  return 0;
+}
+// helper: get value from housing row by column name keyword
+function hv(row, keyword){
+  var idx=S.hCI[keyword];
+  if(idx===undefined){
+    // direct lookup by full column name
+    idx=S.houCol[keyword];
+    if(idx===undefined) idx=hcFind(keyword);
+  }
+  return (row&&row[idx]!==undefined) ? str(row[idx]) : '';
 }
 function onErr(e){console.error(e);alert('⚠️ โหลดข้อมูลไม่ได้\n'+e);}
 
@@ -962,6 +1081,7 @@ function renderAll(){
   renderOffDash(); renderTable('off');
   renderVehDash(); renderTable('veh');
   renderDisDash(); renderTable('dis');
+  renderHouDash(); renderTable('hou');
 }
 
 /* ────────────────────────────────────────────────────
@@ -1027,6 +1147,15 @@ function populateFilters(){
   DCOLS.forEach(function(d){
     var o=document.createElement('option'); o.value=String(d.i); o.textContent='🏥 '+d.n; sel.appendChild(o);
   });
+
+  // Housing filters
+  var hz={}, hb={};
+  S.raw.hou.forEach(function(row){
+    var z=hv(row,'zone');  if(z) hz[z]=1;
+    var b=hv(row,'block'); if(b) hb[b]=1;
+  });
+  fillSel('fHZ', Object.keys(hz).sort(function(a,b){return a-b||a.localeCompare(b,'th');}), '🏘️ ทุกเขต');
+  fillSel('fHB', Object.keys(hb).sort(function(a,b){return a-b||a.localeCompare(b,'th');}), '🏢 ทุกแถว');
 }
 function fillSel(id,vals,ph){
   var s=q(id); s.innerHTML='<option value="">'+ph+'</option>';
@@ -1257,7 +1386,8 @@ function renderDisDash(){
 function renderTable(name){
   if(name==='off')renderOff();
   else if(name==='veh')renderVeh();
-  else renderDis();
+  else if(name==='dis')renderDis();
+  else if(name==='hou')renderHou();
 }
 
 function renderOff(){
@@ -1459,6 +1589,143 @@ function orgCat(u){
   if(s.includes('บน'))return 'บน.2';
   return 'อื่นๆ';
 }
+/* ────────────────────────────────────────────────────
+   HOUSING — FILTER & SORT
+──────────────────────────────────────────────────── */
+function applyHF(){
+  var fz=q('fHZ').value, fb=q('fHB').value;
+  var fr=q('fHR').value.trim().toLowerCase(), fn=q('fHN').value.trim().toLowerCase();
+  S.filt.hou=S.raw.hou.filter(function(row){
+    if(fz && hv(row,'zone')!==fz)   return false;
+    if(fb && hv(row,'block')!==fb)  return false;
+    if(fr && str(hv(row,'room')).toLowerCase().indexOf(fr)<0) return false;
+    if(fn){
+      var n=hv(row,'name').toLowerCase();
+      if(n.indexOf(fn)<0) return false;
+    }
+    return true;
+  });
+  S.pg.hou=1; renderHouDash(); renderTable('hou');
+}
+function filterHou(){applyHF();}
+function resetHF(){
+  q('fHZ').value=''; q('fHB').value=''; q('fHR').value=''; q('fHN').value='';
+  S.filt.hou=S.raw.hou.slice(); S.pg.hou=1; renderHouDash(); renderTable('hou');
+}
+function sHou(field){
+  var col=S.hCI[field];
+  if(col===undefined||col<0) return;
+  sT('hou',col);
+}
+
+/* ────────────────────────────────────────────────────
+   HOUSING — OFFICIALS LOOKUP
+──────────────────────────────────────────────────── */
+function lookupOff(houName){
+  houName=(houName||'').trim();
+  if(!houName) return null;
+  if(S.offMap[houName]) return S.offMap[houName];
+  // Try first-name-only match
+  var first=houName.split(' ')[0];
+  return first ? (S.offMap[first]||null) : null;
+}
+
+/* ────────────────────────────────────────────────────
+   HOUSING DASHBOARD
+──────────────────────────────────────────────────── */
+function renderHouDash(){
+  var rows=S.filt.hou;
+  var occ=rows.filter(function(row){return hv(row,'name')!=='';});
+  var vac=rows.length-occ.length;
+  var pct=rows.length>0?Math.round(occ.length/rows.length*100):0;
+  q('hTot').textContent=rows.length;
+  q('hOcc').textContent=occ.length;
+  q('hVac').textContent=vac;
+  q('hPct').textContent=pct+'%';
+
+  // ── Zone stacked bar (occupied vs vacant) ──────────
+  var zones={};
+  rows.forEach(function(row){
+    var z=hv(row,'zone')||'ไม่ระบุ';
+    if(!zones[z]) zones[z]={occ:0,vac:0};
+    if(hv(row,'name')) zones[z].occ++; else zones[z].vac++;
+  });
+  var zk=Object.keys(zones).sort();
+  mkChart('cHZone','bar',{
+    labels:zk,
+    datasets:[
+      {label:'มีผู้พัก',data:zk.map(function(z){return zones[z].occ;}),
+       backgroundColor:'#22c55e',borderRadius:3,stack:'s'},
+      {label:'ว่าง',data:zk.map(function(z){return zones[z].vac;}),
+       backgroundColor:'#f97316',borderRadius:3,stack:'s'}
+    ]
+  },{
+    legend:{position:'top',labels:{font:{size:11},boxWidth:10}},
+    scales:{
+      x:{stacked:true,grid:{display:false},ticks:{font:{size:11}}},
+      y:{stacked:true,beginAtZero:true,grid:{color:'rgba(0,0,0,0.04)'}}
+    }
+  });
+
+  // ── Building label list ────────────────────────────
+  var bldg={};
+  rows.forEach(function(row){var b=hv(row,'block')||'ไม่ระบุ'; bldg[b]=(bldg[b]||0)+1;});
+  var bs=sortObj(bldg);
+  renderLabelList('llHBldg',bs.map(function(x){return 'แถว '+x[0];}),bs.map(function(x){return x[1];}), '#3b82f6');
+}
+
+/* ────────────────────────────────────────────────────
+   HOUSING TABLE
+──────────────────────────────────────────────────── */
+function renderHou(){
+  var rows=S.filt.hou,pp=S.pp.hou,pg=S.pg.hou;
+  var s=(pg-1)*pp, slice=rows.slice(s,s+pp);
+  q('cntHou').textContent=rows.length+' ห้อง';
+  var h='';
+  if(!slice.length){
+    h='<tr><td colspan="8" class="empty"><span class="ei">🔍</span>ไม่พบข้อมูล</td></tr>';
+  } else {
+    slice.forEach(function(row,i){
+      var zone  = hv(row,'zone')  || '—';
+      var block = hv(row,'block') || '—';
+      var room  = hv(row,'room')  || '—';
+      var name  = hv(row,'name');
+
+      // Cross-reference กับข้าราชการ
+      var info  = lookupOff(name);
+      var rank  = info ? info.rank : '—';
+      var unit  = info ? info.unit : '—';
+
+      // ถ้าไม่พบใน offMap แต่ sheet มีข้อมูลยศโดยตรง ให้ fallback
+      if(!info){
+        var rk=hv(row,'ยศ'); if(rk) rank=rk;
+        var ut=hv(row,'หน่วย'); if(ut) unit=ut;
+      }
+
+      var isEmpty = name==='';
+      var statusBdg = isEmpty
+        ? '<span class="bdg b-orange">ว่าง</span>'
+        : '<span class="bdg b-green">มีผู้พัก</span>';
+      var nameCell = isEmpty
+        ? '<span class="mu" style="font-size:.75rem">— ไม่มีข้อมูล —</span>'
+        : '<span class="fw7">'+esc(name)+'</span>';
+
+      h+='<tr>'+
+        '<td class="mu">'+(s+i+1)+'</td>'+
+        '<td><span class="bdg b-blue">เขต '+esc(zone)+'</span></td>'+
+        '<td style="text-align:center;font-weight:700">'+esc(block)+'</td>'+
+        '<td style="text-align:center">'+esc(room)+'</td>'+
+        '<td>'+(rank!=='—'?'<span class="bdg b-purple">'+esc(rank)+'</span>':'<span class="mu">—</span>')+'</td>'+
+        '<td>'+nameCell+'</td>'+
+        '<td class="wrap" style="font-size:.78rem">'+esc(unit)+'</td>'+
+        '<td>'+statusBdg+'</td>'+
+        '</tr>';
+    });
+  }
+  q('tbHou').innerHTML=h;
+  renderPg('hou',rows.length,pp,pg);
+}
+
 function sortObj(obj){
   return Object.entries(obj).sort(function(a,b){return b[1]-a[1];});
 }
@@ -1535,7 +1802,7 @@ function showToast(msg){
 /* ────────────────────────────────────────────────────
    EDIT / ADD MODAL (Admin only)
 ──────────────────────────────────────────────────── */
-var SHMAP = {off:0, veh:1, dis:2};
+var SHMAP = {off:0, veh:1, dis:2, hou:3};
 
 function openAdd(type){
   if(S.role!=='admin') return;
